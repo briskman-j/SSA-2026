@@ -1,0 +1,37 @@
+name: Weekly ESPN Recap Sync
+
+on:
+  schedule:
+    # Runs every Tuesday at 13:15 UTC (9:15 AM EDT / 8:15 AM EST) after MNF stats finalize
+    - cron: "15 13 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-recaps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch latest ESPN League 1000567 scores & rebuild static editions
+        run: python3 build_alliance_site.py --fetch
+
+      - name: Commit and push updated recap editions
+        run: |
+          git config user.name "Alliance Dispatch Bot"
+          git config user.email "briskman-j@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No new completed week changes detected."
+          else
+            git commit -m "Auto-publish latest ESPN weekly recap edition"
+            git push
+          fi
