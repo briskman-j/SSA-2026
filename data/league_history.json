@@ -1,0 +1,673 @@
+{
+  "yearsSpan": "2012–2026",
+  "totalSeasons": 15,
+  "completedChampionships": 14,
+  "franchises": [
+    {
+      "key": "Dylan",
+      "tid": 4,
+      "manager": "D B (feeneysucksthebigone)",
+      "shortManager": "D B",
+      "currentTeam": "The Absolute Creamers",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 12,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Team Sharkey's Better",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "Team Not a Single Hoot",
+          "years": "2013",
+          "champYears": []
+        },
+        {
+          "name": "I am Hoot",
+          "years": "2014",
+          "champYears": []
+        },
+        {
+          "name": "Feeney's Last Slice",
+          "years": "2015",
+          "champYears": []
+        },
+        {
+          "name": "Dude, Where's My Carr",
+          "years": "2016",
+          "champYears": []
+        },
+        {
+          "name": "The Lone Ranger",
+          "years": "2017",
+          "champYears": []
+        },
+        {
+          "name": "Half Chubb",
+          "years": "2018",
+          "champYears": []
+        },
+        {
+          "name": "2 RBs 1 Kupp",
+          "years": "2019",
+          "champYears": []
+        },
+        {
+          "name": "Team Burke",
+          "years": "2020",
+          "champYears": []
+        },
+        {
+          "name": "Suck My McmAnus",
+          "years": "2021",
+          "champYears": []
+        },
+        {
+          "name": "Chark Week",
+          "years": "2022–23",
+          "champYears": []
+        },
+        {
+          "name": "The Absolute Creamers",
+          "years": "2024–26",
+          "champYears": []
+        }
+      ],
+      "blurb": "12 distinct identities in 15 seasons—rebranding almost every August like a man fleeing creditors—for zero rings."
+    },
+    {
+      "key": "Brisk",
+      "tid": 2,
+      "manager": "Josh Briskman",
+      "shortManager": "Josh Briskman",
+      "currentTeam": "Bad Mother Tucker's",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 9,
+      "championships": 4,
+      "champYears": [
+        2015,
+        2017,
+        2020,
+        2021
+      ],
+      "names": [
+        {
+          "name": "The WINDOW SMASHERS",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "Los Locos Torsos",
+          "years": "2013–14",
+          "champYears": []
+        },
+        {
+          "name": "man brisk",
+          "years": "2015",
+          "champYears": [
+            2015
+          ]
+        },
+        {
+          "name": "Team Briskman",
+          "years": "2016–18",
+          "champYears": [
+            2017
+          ]
+        },
+        {
+          "name": "Don't call the KITTLE Black",
+          "years": "2019",
+          "champYears": []
+        },
+        {
+          "name": "One Bad Motha Tucker",
+          "years": "2020",
+          "champYears": [
+            2020
+          ]
+        },
+        {
+          "name": "Koo Young Hoes",
+          "years": "2021",
+          "champYears": [
+            2021
+          ]
+        },
+        {
+          "name": "Kick Some b A S S",
+          "years": "2022–23",
+          "champYears": []
+        },
+        {
+          "name": "Bad Mother Tucker's",
+          "years": "2024–26",
+          "champYears": []
+        }
+      ],
+      "blurb": "All-time leader with 4 rings (including back-to-back in 2020–21), which only makes this year's 1-6 Tanner McKee collapse funnier."
+    },
+    {
+      "key": "Feeney",
+      "tid": 1,
+      "manager": "Kyle Feeney",
+      "shortManager": "Kyle Feeney",
+      "currentTeam": "Charlie Kirks Angels",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 8,
+      "championships": 1,
+      "champYears": [
+        2018
+      ],
+      "names": [
+        {
+          "name": "I Shaved My Balls For This?",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "The Shaggin Flagon Wagon",
+          "years": "2013",
+          "champYears": []
+        },
+        {
+          "name": "Rey Mysterio Love Loads",
+          "years": "2014",
+          "champYears": []
+        },
+        {
+          "name": "#mycalvins Johnson",
+          "years": "2015–17",
+          "champYears": []
+        },
+        {
+          "name": "Chief Keefs",
+          "years": "2018",
+          "champYears": [
+            2018
+          ]
+        },
+        {
+          "name": "Chubb(s) Peterson",
+          "years": "2019",
+          "champYears": []
+        },
+        {
+          "name": "Fully Chubb'd",
+          "years": "2020–25",
+          "champYears": []
+        },
+        {
+          "name": "Charlie Kirks Angels",
+          "years": "2026",
+          "champYears": []
+        }
+      ],
+      "blurb": "8 career team names—meaning Kyle has changed his team name 8x more often than he has touched the 2026 waiver wire (1 move)."
+    },
+    {
+      "key": "Billy",
+      "tid": 13,
+      "manager": "Billy Mattimore",
+      "shortManager": "Billy Mattimore",
+      "currentTeam": "Schmatti schmatti",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 7,
+      "championships": 1,
+      "champYears": [
+        2019
+      ],
+      "names": [
+        {
+          "name": "team sacco",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "team Hodor",
+          "years": "2013",
+          "champYears": []
+        },
+        {
+          "name": "Aldon's Legal Team",
+          "years": "2014",
+          "champYears": []
+        },
+        {
+          "name": "Hodor's Revenge",
+          "years": "2015",
+          "champYears": []
+        },
+        {
+          "name": "Team Mattimore",
+          "years": "2016–17",
+          "champYears": []
+        },
+        {
+          "name": "Salty Balti",
+          "years": "2018",
+          "champYears": []
+        },
+        {
+          "name": "Schmatti schmatti",
+          "years": "2019–26",
+          "champYears": [
+            2019
+          ]
+        }
+      ],
+      "blurb": "Burned through 6 names from 2012–18 with zero titles, landed on 'Schmatti schmatti' in 2019, immediately won a ring, and never changed it again."
+    },
+    {
+      "key": "Chase",
+      "tid": 5,
+      "manager": "Chase Bailey",
+      "shortManager": "Chase Bailey",
+      "currentTeam": "#FedOut",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 6,
+      "championships": 1,
+      "champYears": [
+        2023
+      ],
+      "names": [
+        {
+          "name": "Demarcus Ware Da Trees At",
+          "years": "2012–14",
+          "champYears": []
+        },
+        {
+          "name": "Lovie Loads Smith",
+          "years": "2015",
+          "champYears": []
+        },
+        {
+          "name": "Team Bailey",
+          "years": "2016–17",
+          "champYears": []
+        },
+        {
+          "name": "Trashville Predators",
+          "years": "2018–19",
+          "champYears": []
+        },
+        {
+          "name": "Jan Levinson- Robbie-Gould",
+          "years": "2020–25",
+          "champYears": [
+            2023
+          ]
+        },
+        {
+          "name": "#FedOut",
+          "years": "2026",
+          "champYears": []
+        }
+      ],
+      "blurb": "Broke a 12-year title drought as 'Jan Levinson- Robbie-Gould' in 2023 before pivoting to '#FedOut' for his 27-move waiver cardio tour."
+    },
+    {
+      "key": "Owen",
+      "tid": 18,
+      "manager": "Owen Bennett",
+      "shortManager": "Owen Bennett",
+      "currentTeam": "Ottawa Redblacks",
+      "active": true,
+      "seasons": 10,
+      "nameCount": 6,
+      "championships": 1,
+      "champYears": [
+        2013
+      ],
+      "names": [
+        {
+          "name": "The Window Fixers",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "The Great Canadian Hope",
+          "years": "2013–14",
+          "champYears": [
+            2013
+          ]
+        },
+        {
+          "name": "Mahomes Harry Butker",
+          "years": "2020",
+          "champYears": []
+        },
+        {
+          "name": "Dillon Dillon Dillon Dillon",
+          "years": "2021–23",
+          "champYears": []
+        },
+        {
+          "name": "Two Henrys",
+          "years": "2024",
+          "champYears": []
+        },
+        {
+          "name": "Ottawa Redblacks",
+          "years": "2025–26",
+          "champYears": []
+        }
+      ],
+      "blurb": "6 team names across 10 seasons; lone title ('The Great Canadian Hope', 2013) came during Year 1 of Obama's second term."
+    },
+    {
+      "key": "RJ",
+      "tid": 12,
+      "manager": "Ronjohn Dadd",
+      "shortManager": "Ronjohn Dadd",
+      "currentTeam": "Tua Hands Dadd",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 6,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Dipping Beneath Lasers",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "Mayor of Titty City",
+          "years": "2013–14",
+          "champYears": []
+        },
+        {
+          "name": "Stuck it in her Cooper",
+          "years": "2015–18",
+          "champYears": []
+        },
+        {
+          "name": "Where's my Juulio bro?",
+          "years": "2019",
+          "champYears": []
+        },
+        {
+          "name": "The Jerry Jeudy Show",
+          "years": "2020–25",
+          "champYears": []
+        },
+        {
+          "name": "Tua Hands Dadd",
+          "years": "2026",
+          "champYears": []
+        }
+      ],
+      "blurb": "15 seasons, 6 rebrands (from 'Mayor of Titty City' to 'The Jerry Jeudy Show'), 0 rings—now sitting 6-1 trying to end a 15-year drought."
+    },
+    {
+      "key": "RyRy",
+      "tid": 17,
+      "manager": "Ryan Gutowski",
+      "shortManager": "Ryan Gutowski",
+      "currentTeam": "Fat Shamed FOGO",
+      "active": true,
+      "seasons": 14,
+      "nameCount": 3,
+      "championships": 1,
+      "champYears": [
+        2025
+      ],
+      "names": [
+        {
+          "name": "The StUpId NeMa'S",
+          "years": "2012–14",
+          "champYears": []
+        },
+        {
+          "name": "Team Gutowski",
+          "years": "2016–18",
+          "champYears": []
+        },
+        {
+          "name": "Fat Shamed FOGO",
+          "years": "2019–26",
+          "champYears": [
+            2025
+          ]
+        }
+      ],
+      "blurb": "Reigning champ: kept 'Fat Shamed FOGO' through 8 straight winters (including a 2-12 tank in 2023) until it finally cashed the 2025 title."
+    },
+    {
+      "key": "O'Keefe",
+      "tid": 3,
+      "manager": "Kyle O'Keefe",
+      "shortManager": "Kyle O'Keefe",
+      "currentTeam": "Team O'Keefe",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 2,
+      "championships": 2,
+      "champYears": [
+        2012,
+        2024
+      ],
+      "names": [
+        {
+          "name": "Team Wills Sucks",
+          "years": "2012–15",
+          "champYears": [
+            2012
+          ]
+        },
+        {
+          "name": "Team O'Keefe",
+          "years": "2016–26",
+          "champYears": [
+            2024
+          ]
+        }
+      ],
+      "blurb": "1.00 rings-per-name efficiency: won the inaugural 2012 title out of spite ('Team Wills Sucks'), went default 'Team O'Keefe' in 2016, and won again in 2024."
+    },
+    {
+      "key": "Wills",
+      "tid": 15,
+      "manager": "Wills Miller",
+      "shortManager": "Wills Miller",
+      "currentTeam": "Team Miller",
+      "active": true,
+      "seasons": 15,
+      "nameCount": 2,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Team kylelovesmolly",
+          "years": "2012–15",
+          "champYears": []
+        },
+        {
+          "name": "Team Miller",
+          "years": "2016–26",
+          "champYears": []
+        }
+      ],
+      "blurb": "Traded spite names with O'Keefe from 2012–15, parked on default 'Team Miller' for 11 straight years, and still has 0 rings despite leading 2026 in scoring."
+    },
+    {
+      "key": "Jackson",
+      "tid": 19,
+      "manager": "Jackson Place",
+      "shortManager": "Jackson Place",
+      "currentTeam": "Team Place",
+      "active": true,
+      "seasons": 7,
+      "nameCount": 1,
+      "championships": 1,
+      "champYears": [
+        2022
+      ],
+      "names": [
+        {
+          "name": "Team Place",
+          "years": "2020–26",
+          "champYears": [
+            2022
+          ]
+        }
+      ],
+      "blurb": "Has never once clicked 'Edit Team Name' in 7 seasons ('Team Place') and still won a ring (2022) before D B, Ronjohn, Wills, or Huffner."
+    },
+    {
+      "key": "Huffner",
+      "tid": 20,
+      "manager": "Michael Huffner",
+      "shortManager": "Michael Huffner",
+      "currentTeam": "Team Huffner",
+      "active": true,
+      "seasons": 7,
+      "nameCount": 1,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Team Huffner",
+          "years": "2012–14, 2023–26",
+          "champYears": []
+        }
+      ],
+      "blurb": "Rocking untouched ESPN auto-fill 'Team Huffner' since 2012: 1 default name, 2 waiver moves this year, 0 championships."
+    },
+    {
+      "key": "Sharkey",
+      "tid": null,
+      "manager": "Matthew Sharkey",
+      "shortManager": "Matthew Sharkey",
+      "currentTeam": "Ha-Ha Clinton Hates Dix",
+      "active": false,
+      "seasons": 4,
+      "nameCount": 4,
+      "championships": 2,
+      "champYears": [
+        2014,
+        2016
+      ],
+      "names": [
+        {
+          "name": "Sit On My Face Book",
+          "years": "2012",
+          "champYears": []
+        },
+        {
+          "name": "Suck My Unit",
+          "years": "2013",
+          "champYears": []
+        },
+        {
+          "name": "Winter is Cumming",
+          "years": "2014",
+          "champYears": [
+            2014
+          ]
+        },
+        {
+          "name": "Ha-Ha Clinton Hates Dix",
+          "years": "2016",
+          "champYears": [
+            2016
+          ]
+        }
+      ],
+      "blurb": "Retired legend: played 4 seasons (2012–14, 2016), dropped 4 unhinged names, stole 2 rings (tied for #2 all-time), and rode off into the sunset."
+    },
+    {
+      "key": "Fuentes",
+      "tid": null,
+      "manager": "Michael Fuentes",
+      "shortManager": "Michael Fuentes",
+      "currentTeam": "Team Babs",
+      "active": false,
+      "seasons": 10,
+      "nameCount": 6,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "The Fat Chewin Cows",
+          "years": "2012–14",
+          "champYears": []
+        },
+        {
+          "name": "We Wilfork You",
+          "years": "2015",
+          "champYears": []
+        },
+        {
+          "name": "Team Fuentes",
+          "years": "2016–18",
+          "champYears": []
+        },
+        {
+          "name": "Ferrigno Feelers",
+          "years": "2019",
+          "champYears": []
+        },
+        {
+          "name": "NEW YORK BLUES",
+          "years": "2020",
+          "champYears": []
+        },
+        {
+          "name": "Team Babs",
+          "years": "2021",
+          "champYears": []
+        }
+      ],
+      "blurb": "Retired alumni (2012–21): 10 seasons, 6 team names, 2015 runner-up, 0 championships."
+    },
+    {
+      "key": "TBO",
+      "tid": null,
+      "manager": "Thomas Thibeault",
+      "shortManager": "Thomas Thibeault",
+      "currentTeam": "Team Thibeault",
+      "active": false,
+      "seasons": 5,
+      "nameCount": 1,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Team Thibeault",
+          "years": "2012–16",
+          "champYears": []
+        }
+      ],
+      "blurb": "Retired alumni (2012–16): 5 seasons of default 'Team Thibeault', 0 playoff appearances, 0 rings."
+    },
+    {
+      "key": "Richard",
+      "tid": null,
+      "manager": "Harte Thompson",
+      "shortManager": "Harte Thompson",
+      "currentTeam": "Phillymore HTEC",
+      "active": false,
+      "seasons": 1,
+      "nameCount": 1,
+      "championships": 0,
+      "champYears": [],
+      "names": [
+        {
+          "name": "Phillymore HTEC",
+          "years": "2022",
+          "champYears": []
+        }
+      ],
+      "blurb": "One-season cameo (2022): went 7-8 as 'Phillymore HTEC' and retired undefeated in retirement."
+    }
+  ]
+}

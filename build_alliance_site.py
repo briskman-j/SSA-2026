@@ -3,13 +3,15 @@
 
 Builds:
   - index.html (Newsstand & Featured Latest Issue)
-  - recaps/midseason/index.html (Midseason State of the Alliance Roast)
+  - recaps/midseason/index.html (Midseason State of the Alliance Roast + 15-Year Franchise History Chart)
   - recaps/week-1/index.html .. recaps/week-7/index.html (Per-week archive with custom OpenGraph cards)
-  - super-smash-alliance-site.zip (Ready for 5-second Netlify Drop / Cloudflare Pages / GitHub Pages)
+  - data/league_history.json (2012–2026 franchise team names & championships archive)
+  - super-smash-alliance-site.zip (Portable static site bundle)
 """
 
 import argparse
 from collections import defaultdict
+import copy
 import html
 from html.parser import HTMLParser
 import json
@@ -49,6 +51,330 @@ MANAGER_SHORT = {
     18: "Owen Bennett",
     19: "Jackson Place",
     20: "Michael Huffner",
+}
+
+# Verified 15-Season Franchise History (2012–2026): Team Names & Championships
+BASE_LEAGUE_HISTORY = {
+    "yearsSpan": "2012–2026",
+    "totalSeasons": 15,
+    "completedChampionships": 14,
+    "franchises": [
+        {
+            "key": "Dylan",
+            "tid": 4,
+            "manager": "D B (feeneysucksthebigone)",
+            "shortManager": "D B",
+            "currentTeam": "The Absolute Creamers",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 12,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Team Sharkey's Better", "years": "2012", "champYears": []},
+                {"name": "Team Not a Single Hoot", "years": "2013", "champYears": []},
+                {"name": "I am Hoot", "years": "2014", "champYears": []},
+                {"name": "Feeney's Last Slice", "years": "2015", "champYears": []},
+                {"name": "Dude, Where's My Carr", "years": "2016", "champYears": []},
+                {"name": "The Lone Ranger", "years": "2017", "champYears": []},
+                {"name": "Half Chubb", "years": "2018", "champYears": []},
+                {"name": "2 RBs 1 Kupp", "years": "2019", "champYears": []},
+                {"name": "Team Burke", "years": "2020", "champYears": []},
+                {"name": "Suck My McmAnus", "years": "2021", "champYears": []},
+                {"name": "Chark Week", "years": "2022–23", "champYears": []},
+                {"name": "The Absolute Creamers", "years": "2024–26", "champYears": []},
+            ],
+            "blurb": "12 distinct identities in 15 seasons—rebranding almost every August like a man fleeing creditors—for zero rings.",
+        },
+        {
+            "key": "Brisk",
+            "tid": 2,
+            "manager": "Josh Briskman",
+            "shortManager": "Josh Briskman",
+            "currentTeam": "Bad Mother Tucker's",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 9,
+            "championships": 4,
+            "champYears": [2015, 2017, 2020, 2021],
+            "names": [
+                {"name": "The WINDOW SMASHERS", "years": "2012", "champYears": []},
+                {"name": "Los Locos Torsos", "years": "2013–14", "champYears": []},
+                {"name": "man brisk", "years": "2015", "champYears": [2015]},
+                {"name": "Team Briskman", "years": "2016–18", "champYears": [2017]},
+                {"name": "Don't call the KITTLE Black", "years": "2019", "champYears": []},
+                {"name": "One Bad Motha Tucker", "years": "2020", "champYears": [2020]},
+                {"name": "Koo Young Hoes", "years": "2021", "champYears": [2021]},
+                {"name": "Kick Some b A S S", "years": "2022–23", "champYears": []},
+                {"name": "Bad Mother Tucker's", "years": "2024–26", "champYears": []},
+            ],
+            "blurb": "All-time leader with 4 rings (including back-to-back in 2020–21), which only makes this year's 1-6 Tanner McKee collapse funnier.",
+        },
+        {
+            "key": "Feeney",
+            "tid": 1,
+            "manager": "Kyle Feeney",
+            "shortManager": "Kyle Feeney",
+            "currentTeam": "Charlie Kirks Angels",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 8,
+            "championships": 1,
+            "champYears": [2018],
+            "names": [
+                {"name": "I Shaved My Balls For This?", "years": "2012", "champYears": []},
+                {"name": "The Shaggin Flagon Wagon", "years": "2013", "champYears": []},
+                {"name": "Rey Mysterio Love Loads", "years": "2014", "champYears": []},
+                {"name": "#mycalvins Johnson", "years": "2015–17", "champYears": []},
+                {"name": "Chief Keefs", "years": "2018", "champYears": [2018]},
+                {"name": "Chubb(s) Peterson", "years": "2019", "champYears": []},
+                {"name": "Fully Chubb'd", "years": "2020–25", "champYears": []},
+                {"name": "Charlie Kirks Angels", "years": "2026", "champYears": []},
+            ],
+            "blurb": "8 career team names—meaning Kyle has changed his team name 8x more often than he has touched the 2026 waiver wire (1 move).",
+        },
+        {
+            "key": "Billy",
+            "tid": 13,
+            "manager": "Billy Mattimore",
+            "shortManager": "Billy Mattimore",
+            "currentTeam": "Schmatti schmatti",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 7,
+            "championships": 1,
+            "champYears": [2019],
+            "names": [
+                {"name": "team sacco", "years": "2012", "champYears": []},
+                {"name": "team Hodor", "years": "2013", "champYears": []},
+                {"name": "Aldon's Legal Team", "years": "2014", "champYears": []},
+                {"name": "Hodor's Revenge", "years": "2015", "champYears": []},
+                {"name": "Team Mattimore", "years": "2016–17", "champYears": []},
+                {"name": "Salty Balti", "years": "2018", "champYears": []},
+                {"name": "Schmatti schmatti", "years": "2019–26", "champYears": [2019]},
+            ],
+            "blurb": "Burned through 6 names from 2012–18 with zero titles, landed on 'Schmatti schmatti' in 2019, immediately won a ring, and never changed it again.",
+        },
+        {
+            "key": "Chase",
+            "tid": 5,
+            "manager": "Chase Bailey",
+            "shortManager": "Chase Bailey",
+            "currentTeam": "#FedOut",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 6,
+            "championships": 1,
+            "champYears": [2023],
+            "names": [
+                {"name": "Demarcus Ware Da Trees At", "years": "2012–14", "champYears": []},
+                {"name": "Lovie Loads Smith", "years": "2015", "champYears": []},
+                {"name": "Team Bailey", "years": "2016–17", "champYears": []},
+                {"name": "Trashville Predators", "years": "2018–19", "champYears": []},
+                {"name": "Jan Levinson- Robbie-Gould", "years": "2020–25", "champYears": [2023]},
+                {"name": "#FedOut", "years": "2026", "champYears": []},
+            ],
+            "blurb": "Broke a 12-year title drought as 'Jan Levinson- Robbie-Gould' in 2023 before pivoting to '#FedOut' for his 27-move waiver cardio tour.",
+        },
+        {
+            "key": "Owen",
+            "tid": 18,
+            "manager": "Owen Bennett",
+            "shortManager": "Owen Bennett",
+            "currentTeam": "Ottawa Redblacks",
+            "active": True,
+            "seasons": 10,
+            "nameCount": 6,
+            "championships": 1,
+            "champYears": [2013],
+            "names": [
+                {"name": "The Window Fixers", "years": "2012", "champYears": []},
+                {"name": "The Great Canadian Hope", "years": "2013–14", "champYears": [2013]},
+                {"name": "Mahomes Harry Butker", "years": "2020", "champYears": []},
+                {"name": "Dillon Dillon Dillon Dillon", "years": "2021–23", "champYears": []},
+                {"name": "Two Henrys", "years": "2024", "champYears": []},
+                {"name": "Ottawa Redblacks", "years": "2025–26", "champYears": []},
+            ],
+            "blurb": "6 team names across 10 seasons; lone title ('The Great Canadian Hope', 2013) came during Year 1 of Obama's second term.",
+        },
+        {
+            "key": "RJ",
+            "tid": 12,
+            "manager": "Ronjohn Dadd",
+            "shortManager": "Ronjohn Dadd",
+            "currentTeam": "Tua Hands Dadd",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 6,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Dipping Beneath Lasers", "years": "2012", "champYears": []},
+                {"name": "Mayor of Titty City", "years": "2013–14", "champYears": []},
+                {"name": "Stuck it in her Cooper", "years": "2015–18", "champYears": []},
+                {"name": "Where's my Juulio bro?", "years": "2019", "champYears": []},
+                {"name": "The Jerry Jeudy Show", "years": "2020–25", "champYears": []},
+                {"name": "Tua Hands Dadd", "years": "2026", "champYears": []},
+            ],
+            "blurb": "15 seasons, 6 rebrands (from 'Mayor of Titty City' to 'The Jerry Jeudy Show'), 0 rings—now sitting 6-1 trying to end a 15-year drought.",
+        },
+        {
+            "key": "RyRy",
+            "tid": 17,
+            "manager": "Ryan Gutowski",
+            "shortManager": "Ryan Gutowski",
+            "currentTeam": "Fat Shamed FOGO",
+            "active": True,
+            "seasons": 14,
+            "nameCount": 3,
+            "championships": 1,
+            "champYears": [2025],
+            "names": [
+                {"name": "The StUpId NeMa'S", "years": "2012–14", "champYears": []},
+                {"name": "Team Gutowski", "years": "2016–18", "champYears": []},
+                {"name": "Fat Shamed FOGO", "years": "2019–26", "champYears": [2025]},
+            ],
+            "blurb": "Reigning champ: kept 'Fat Shamed FOGO' through 8 straight winters (including a 2-12 tank in 2023) until it finally cashed the 2025 title.",
+        },
+        {
+            "key": "O'Keefe",
+            "tid": 3,
+            "manager": "Kyle O'Keefe",
+            "shortManager": "Kyle O'Keefe",
+            "currentTeam": "Team O'Keefe",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 2,
+            "championships": 2,
+            "champYears": [2012, 2024],
+            "names": [
+                {"name": "Team Wills Sucks", "years": "2012–15", "champYears": [2012]},
+                {"name": "Team O'Keefe", "years": "2016–26", "champYears": [2024]},
+            ],
+            "blurb": "1.00 rings-per-name efficiency: won the inaugural 2012 title out of spite ('Team Wills Sucks'), went default 'Team O'Keefe' in 2016, and won again in 2024.",
+        },
+        {
+            "key": "Wills",
+            "tid": 15,
+            "manager": "Wills Miller",
+            "shortManager": "Wills Miller",
+            "currentTeam": "Team Miller",
+            "active": True,
+            "seasons": 15,
+            "nameCount": 2,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Team kylelovesmolly", "years": "2012–15", "champYears": []},
+                {"name": "Team Miller", "years": "2016–26", "champYears": []},
+            ],
+            "blurb": "Traded spite names with O'Keefe from 2012–15, parked on default 'Team Miller' for 11 straight years, and still has 0 rings despite leading 2026 in scoring.",
+        },
+        {
+            "key": "Jackson",
+            "tid": 19,
+            "manager": "Jackson Place",
+            "shortManager": "Jackson Place",
+            "currentTeam": "Team Place",
+            "active": True,
+            "seasons": 7,
+            "nameCount": 1,
+            "championships": 1,
+            "champYears": [2022],
+            "names": [
+                {"name": "Team Place", "years": "2020–26", "champYears": [2022]},
+            ],
+            "blurb": "Has never once clicked 'Edit Team Name' in 7 seasons ('Team Place') and still won a ring (2022) before D B, Ronjohn, Wills, or Huffner.",
+        },
+        {
+            "key": "Huffner",
+            "tid": 20,
+            "manager": "Michael Huffner",
+            "shortManager": "Michael Huffner",
+            "currentTeam": "Team Huffner",
+            "active": True,
+            "seasons": 7,
+            "nameCount": 1,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Team Huffner", "years": "2012–14, 2023–26", "champYears": []},
+            ],
+            "blurb": "Rocking untouched ESPN auto-fill 'Team Huffner' since 2012: 1 default name, 2 waiver moves this year, 0 championships.",
+        },
+        {
+            "key": "Sharkey",
+            "tid": None,
+            "manager": "Matthew Sharkey",
+            "shortManager": "Matthew Sharkey",
+            "currentTeam": "Ha-Ha Clinton Hates Dix",
+            "active": False,
+            "seasons": 4,
+            "nameCount": 4,
+            "championships": 2,
+            "champYears": [2014, 2016],
+            "names": [
+                {"name": "Sit On My Face Book", "years": "2012", "champYears": []},
+                {"name": "Suck My Unit", "years": "2013", "champYears": []},
+                {"name": "Winter is Cumming", "years": "2014", "champYears": [2014]},
+                {"name": "Ha-Ha Clinton Hates Dix", "years": "2016", "champYears": [2016]},
+            ],
+            "blurb": "Retired legend: played 4 seasons (2012–14, 2016), dropped 4 unhinged names, stole 2 rings (tied for #2 all-time), and rode off into the sunset.",
+        },
+        {
+            "key": "Fuentes",
+            "tid": None,
+            "manager": "Michael Fuentes",
+            "shortManager": "Michael Fuentes",
+            "currentTeam": "Team Babs",
+            "active": False,
+            "seasons": 10,
+            "nameCount": 6,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "The Fat Chewin Cows", "years": "2012–14", "champYears": []},
+                {"name": "We Wilfork You", "years": "2015", "champYears": []},
+                {"name": "Team Fuentes", "years": "2016–18", "champYears": []},
+                {"name": "Ferrigno Feelers", "years": "2019", "champYears": []},
+                {"name": "NEW YORK BLUES", "years": "2020", "champYears": []},
+                {"name": "Team Babs", "years": "2021", "champYears": []},
+            ],
+            "blurb": "Retired alumni (2012–21): 10 seasons, 6 team names, 2015 runner-up, 0 championships.",
+        },
+        {
+            "key": "TBO",
+            "tid": None,
+            "manager": "Thomas Thibeault",
+            "shortManager": "Thomas Thibeault",
+            "currentTeam": "Team Thibeault",
+            "active": False,
+            "seasons": 5,
+            "nameCount": 1,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Team Thibeault", "years": "2012–16", "champYears": []},
+            ],
+            "blurb": "Retired alumni (2012–16): 5 seasons of default 'Team Thibeault', 0 playoff appearances, 0 rings.",
+        },
+        {
+            "key": "Richard",
+            "tid": None,
+            "manager": "Harte Thompson",
+            "shortManager": "Harte Thompson",
+            "currentTeam": "Phillymore HTEC",
+            "active": False,
+            "seasons": 1,
+            "nameCount": 1,
+            "championships": 0,
+            "champYears": [],
+            "names": [
+                {"name": "Phillymore HTEC", "years": "2022", "champYears": []},
+            ],
+            "blurb": "One-season cameo (2022): went 7-8 as 'Phillymore HTEC' and retired undefeated in retirement.",
+        },
+    ],
 }
 
 TEAM_ROASTS = {
@@ -294,6 +620,21 @@ def load_espn_data(out_dir, fetch_live=False):
         return json.load(f)
 
 
+def build_franchise_history(teams_by_id):
+    history = copy.deepcopy(BASE_LEAGUE_HISTORY)
+    for fr in history["franchises"]:
+        tid = fr.get("tid")
+        if tid and tid in teams_by_id:
+            live_name = " ".join(teams_by_id[tid]["name"].split())
+            if live_name:
+                fr["currentTeam"] = live_name
+                known_lower = {item["name"].lower() for item in fr["names"]}
+                if live_name.lower() not in known_lower:
+                    fr["names"].append({"name": live_name, "years": str(SEASON_ID), "champYears": []})
+                    fr["nameCount"] = len(fr["names"])
+    return history
+
+
 def compute_league_model(data):
     current_mp = data.get("status", {}).get("currentMatchupPeriod", 8)
     completed_weeks = current_mp - 1
@@ -441,6 +782,8 @@ def compute_league_model(data):
             note = "27-move Chase tries to climb back over the 2.30-pt playoff wall against red-hot 1-6 Owen."
         upcoming_cards.append([aid, hid, note])
 
+    history_model = build_franchise_history(teams)
+
     return {
         "leagueName": data.get("settings", {}).get("name", "The Super Smash Alliance 10.0"),
         "leagueId": LEAGUE_ID,
@@ -449,21 +792,22 @@ def compute_league_model(data):
         "teams": sorted_teams,
         "weeks": weeks_summary,
         "upcoming": upcoming_cards,
+        "history": history_model,
     }
 
 
 def render_html_page(model, default_issue="midseason", base_prefix="./", is_root=False):
     if default_issue == "midseason":
-        og_title = "SUPER SMASH ALLIANCE 10.0 — Midseason Roast: 8-Player Sudden Death & Bad Mother Tucker's K.O."
+        og_title = "The Alliance Dispatch — Midseason Roast: 8 Teams in a Phone Booth & Bad Mother Tucker's Funeral"
         og_desc = (
-            "Official Midseason Smash Dispatch: 6 fighters deadlocked at 4-3, 8 of 12 trapped in 8-Player Sudden Death, "
-            "0 trades, CPU Lv.1 Feeney's 1 waiver move, and 1-6 Bad Mother Tucker's launched off the Blast Zone."
+            "Official Midseason State of The Super Smash Alliance 10.0: 6 teams deadlocked at 4-3, "
+            "8 of 12 within 1 game, 15-year team names vs. championships chart, and 1-6 Bad Mother Tucker's autopsy."
         )
     else:
         wk_num = default_issue.replace("week-", "")
         wk_obj = model["weeks"].get(wk_num, {})
-        og_title = f"SUPER SMASH ALLIANCE 10.0 — Stage {wk_num}: {wk_obj.get('headline', 'Weekly Smash Recap')}"
-        og_desc = wk_obj.get("subhead", "Official Weekly Smash Recap & Standings for The Super Smash Alliance 10.0.")
+        og_title = f"The Alliance Dispatch — Week {wk_num}: {wk_obj.get('headline', 'Weekly Roast')}"
+        og_desc = wk_obj.get("subhead", "Official Weekly Recap & Standings for The Super Smash Alliance 10.0.")
 
     canonical_url = PUBLIC_SITE_URL if is_root else f"{PUBLIC_SITE_URL}recaps/{default_issue}/"
     og_image_url = f"{PUBLIC_SITE_URL}assets/smash-arena-hero.jpg"
@@ -474,8 +818,8 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         "%3Cdefs%3E%3Cmask id='m'%3E%3Ccircle cx='50' cy='50' r='46' fill='white'/%3E"
         "%3Crect x='25' y='0' width='15' height='100' fill='black'/%3E"
         "%3Crect x='0' y='60' width='100' height='10' fill='black'/%3E%3C/mask%3E%3C/defs%3E"
-        "%3Ccircle cx='50' cy='50' r='48' fill='%230B0D13'/%3E"
-        "%3Ccircle cx='50' cy='50' r='44' fill='%23E60012' mask='url(%23m)'/%3E%3C/svg%3E"
+        "%3Ccircle cx='50' cy='50' r='48' fill='%2316191D'/%3E"
+        "%3Ccircle cx='50' cy='50' r='42' fill='%23C81E1E' mask='url(%23m)'/%3E%3C/svg%3E"
     )
     json_payload = json.dumps(model, ensure_ascii=False, separators=(",", ":"))
 
@@ -498,729 +842,440 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
   <meta name="twitter:title" content="{html.escape(og_title)}" />
   <meta name="twitter:description" content="{html.escape(og_desc)}" />
   <meta name="twitter:image" content="{html.escape(og_image_url)}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Kanit:ital,wght@0,700;0,800;0,900;1,800;1,900&family=Press+Start+2P&display=swap" rel="stylesheet" />
   <style>
     :root, [data-theme="light"] {{
-      --bg: #F2F3F7;
-      --bg-alt: #E5E8F0;
-      --bg-dots: rgba(15, 18, 26, 0.055);
+      --bg: #F6F4EE;
+      --bg-alt: #EDEAE0;
       --card: #FFFFFF;
-      --ink: #0F121A;
-      --ink-secondary: #373E4D;
-      --ink-muted: #5E6678;
-      --frame: #0F121A;
-      --rule: #CFD5E2;
-      --smash-red: #E60012;
-      --smash-orange: #FF5E00;
-      --smash-gold: #FFB800;
-      --smash-blue: #0068B7;
-      --crimson: #D90429;
-      --crimson-bg: #FFF0F3;
-      --crimson-border: #FF8FA3;
-      --emerald: #008F4C;
-      --emerald-bg: #ECFDF5;
-      --emerald-border: #6EE7B7;
+      --ink: #16191D;
+      --ink-secondary: #485058;
+      --ink-muted: #6C737B;
+      --rule: #DCD7C9;
+      --rule-strong: #16191D;
+      --crimson: #B91C1C;
+      --crimson-bg: #FEF2F2;
+      --crimson-border: #FECACA;
+      --emerald: #0F766E;
+      --emerald-bg: #F0FDFA;
+      --emerald-border: #99F6E4;
       --amber: #B45309;
       --amber-bg: #FFFBEB;
-      --amber-border: #FCD34D;
-      --slate-bg: #EAEFF8;
-      --arcade-shadow: 4px 4px 0px #0F121A;
-      --arcade-shadow-sm: 2px 2px 0px #0F121A;
+      --amber-border: #FDE68A;
+      --navy-bar: #335C81;
+      --navy-bg: #EFF4F9;
+      --gold-bar: #D97706;
+      --gold-bg: #FEF7E6;
+      --gold-border: #F6D28B;
+      --slate-bg: #F1EFE8;
+      --shadow: 0 1px 3px rgba(20, 23, 26, 0.06);
     }}
     [data-theme="dark"] {{
-      --bg: #0B0D14;
-      --bg-alt: #131724;
-      --bg-dots: rgba(255, 255, 255, 0.045);
-      --card: #161B29;
-      --ink: #F5F7FC;
-      --ink-secondary: #C5CCE0;
-      --ink-muted: #8E97B0;
-      --frame: #2E364F;
-      --rule: #283046;
-      --smash-red: #FF1E2D;
-      --smash-orange: #FF7315;
-      --smash-gold: #FFD000;
-      --smash-blue: #2997FF;
-      --crimson: #FF4D6D;
-      --crimson-bg: rgba(217, 4, 41, 0.17);
-      --crimson-border: rgba(255, 77, 109, 0.45);
-      --emerald: #2CE59B;
-      --emerald-bg: rgba(0, 143, 76, 0.2);
-      --emerald-border: rgba(44, 229, 155, 0.4);
-      --amber: #FFC933;
-      --amber-bg: rgba(255, 184, 0, 0.14);
-      --amber-border: rgba(255, 201, 51, 0.42);
-      --slate-bg: #1F263A;
-      --arcade-shadow: 4px 4px 0px #000000;
-      --arcade-shadow-sm: 2px 2px 0px #000000;
+      --bg: #13161B;
+      --bg-alt: #1A1E25;
+      --card: #20252E;
+      --ink: #F1EFEA;
+      --ink-secondary: #C3C8D1;
+      --ink-muted: #8D95A2;
+      --rule: #2F3643;
+      --rule-strong: #E6E3DA;
+      --crimson: #F87171;
+      --crimson-bg: rgba(185, 28, 28, 0.17);
+      --crimson-border: rgba(248, 113, 113, 0.35);
+      --emerald: #2DD4BF;
+      --emerald-bg: rgba(15, 118, 110, 0.2);
+      --emerald-border: rgba(45, 212, 191, 0.35);
+      --amber: #FBBF24;
+      --amber-bg: rgba(180, 83, 9, 0.2);
+      --amber-border: rgba(251, 191, 36, 0.35);
+      --navy-bar: #5B8FD9;
+      --navy-bg: rgba(91, 143, 217, 0.15);
+      --gold-bar: #F59E0B;
+      --gold-bg: rgba(245, 158, 11, 0.16);
+      --gold-border: rgba(245, 158, 11, 0.4);
+      --slate-bg: #272D38;
+      --shadow: 0 2px 6px rgba(0, 0, 0, 0.32);
     }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      background-color: var(--bg);
-      background-image: radial-gradient(var(--bg-dots) 1.25px, transparent 1.25px);
-      background-size: 16px 16px;
+      background: var(--bg);
       color: var(--ink);
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
       font-size: 15px;
-      line-height: 1.56;
+      line-height: 1.58;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: 72px;
+      padding-bottom: 68px;
     }}
     .mono {{
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-variant-numeric: tabular-nums;
     }}
-    .smash-display {{
-      font-family: "Kanit", "Impact", sans-serif;
-      font-weight: 900;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }}
-    .smash-hud {{
-      font-family: "Chakra Petch", "Kanit", sans-serif;
-      font-weight: 700;
-      font-style: italic;
-      font-variant-numeric: tabular-nums;
-    }}
-    .pixel {{
-      font-family: "Press Start 2P", monospace;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }}
-    .container {{ max-width: 1140px; margin: 0 auto; padding: 0 18px; }}
+    .serif {{ font-family: Georgia, Charter, "Iowan Old Style", "Palatino Linotype", serif; }}
+    .container {{ max-width: 1120px; margin: 0 auto; padding: 0 18px; }}
 
-    /* Top Nintendo Switch / Smash Ultimate Arcade Masthead */
-    .masthead {{
-      background: linear-gradient(135deg, #070910 0%, #161024 55%, #2B0914 100%);
-      color: #FFFFFF;
-      border-bottom: 4px solid var(--smash-red);
-      position: relative;
-      overflow: hidden;
-    }}
-    .masthead::before {{
-      content: "";
-      position: absolute;
-      top: 0; bottom: 0; left: -8%;
-      width: 26%;
-      background: linear-gradient(180deg, rgba(230, 0, 18, 0.24), rgba(255, 184, 0, 0.08));
-      transform: skewX(-18deg);
-      pointer-events: none;
-    }}
+    /* Clean Broadsheet Masthead + Framed Smash Arena Illustration */
+    .masthead {{ border-bottom: 3px double var(--rule-strong); padding: 14px 0 16px; background: var(--bg); }}
     .masthead-top {{
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      position: relative; z-index: 2;
-    }}
-    .rules-ticker {{
-      font-size: 9.5px;
-      color: #FFD000;
-      line-height: 1.5;
+      padding-bottom: 10px; border-bottom: 1px solid var(--rule);
+      font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
     }}
     .masthead-actions {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
     .btn {{
-      appearance: none;
-      border: 2px solid var(--frame);
-      background: var(--card);
-      color: var(--ink);
-      font-family: "Kanit", sans-serif;
-      font-weight: 800;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      font-size: 12.5px;
-      padding: 6px 13px;
-      border-radius: 4px;
-      cursor: pointer;
-      box-shadow: var(--arcade-shadow-sm);
-      transition: transform 0.12s ease, background 0.12s ease;
+      appearance: none; border: 1px solid var(--rule); background: var(--card); color: var(--ink);
+      font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
       display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
     }}
-    .btn:hover {{ transform: translate(-1px, -1px); }}
-    .btn-masthead {{
-      background: rgba(255, 255, 255, 0.1);
-      color: #FFFFFF;
-      border-color: rgba(255, 255, 255, 0.35);
-      box-shadow: 2px 2px 0px #000000;
-    }}
-    .btn-masthead:hover {{ background: rgba(255, 255, 255, 0.2); }}
-    .btn-primary {{
-      background: linear-gradient(135deg, #E60012 0%, #FF5E00 100%);
-      color: #FFFFFF;
-      border-color: #FFD000;
-      box-shadow: 2px 2px 0px #000000;
-    }}
-    .btn-primary:hover {{ filter: brightness(1.08); }}
+    .btn:hover {{ background: var(--bg-alt); border-color: var(--ink-muted); }}
+    .btn-primary {{ background: var(--ink); color: var(--bg); border-color: var(--ink); }}
+    .btn-primary:hover {{ opacity: 0.9; background: var(--ink); }}
 
-    /* Arena Hero Stage Showcase */
-    .arena-banner {{
+    .brand-row {{
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: 16px 0 12px;
+    }}
+    .brand-heading {{
+      display: inline-flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+    }}
+    .brand-crest {{ width: 34px; height: 34px; flex-shrink: 0; }}
+    .brand-title {{ font-size: clamp(28px, 4.8vw, 44px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.08; }}
+    .brand-sub {{ margin-top: 6px; font-size: 13.5px; color: var(--ink-secondary); }}
+
+    .artwork-banner {{
       position: relative;
-      margin: 16px 0 18px;
       border-radius: 10px;
       overflow: hidden;
-      border: 3px solid #FFD000;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-      min-height: 250px;
-      display: flex;
-      align-items: flex-end;
-      background: #090B12;
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow);
+      height: 205px;
+      background: #141821;
     }}
-    .arena-img {{
-      position: absolute;
-      inset: 0;
+    @media (max-width: 640px) {{ .artwork-banner {{ height: 155px; }} }}
+    .artwork-banner img {{
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 38%;
-      opacity: 0.82;
+      object-position: center 40%;
+      display: block;
     }}
-    .arena-scrim {{
+    .artwork-caption {{
       position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        0deg,
-        rgba(7, 9, 16, 0.95) 0%,
-        rgba(7, 9, 16, 0.68) 46%,
-        rgba(7, 9, 16, 0.18) 100%
-      );
-    }}
-    .arena-content {{
-      position: relative;
-      z-index: 2;
-      padding: 22px 24px 20px;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      flex-wrap: wrap;
-    }}
-    .brand-emblem {{
-      width: 62px;
-      height: 62px;
-      flex-shrink: 0;
-      filter: drop-shadow(0 0 12px rgba(255, 94, 0, 0.75));
-    }}
-    .brand-title {{
-      font-size: clamp(28px, 5vw, 48px);
-      line-height: 0.98;
-      color: #FFFFFF;
-      text-shadow: 3px 3px 0px #E60012, 6px 6px 0px #000000;
-    }}
-    .brand-sub {{
-      margin-top: 6px;
-      font-size: 13.5px;
-      color: #E2E8F0;
-      font-weight: 600;
-    }}
-    .brand-pill {{
-      display: inline-block;
-      background: #FFD000;
-      color: #0B0D13;
-      font-weight: 900;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 3px;
-      margin-right: 6px;
-      text-transform: uppercase;
-      transform: skewX(-10deg);
-    }}
-
-    /* Sticky Slanted Stage-Select Bar */
-    .edition-bar {{
-      background: #0F121A;
-      border-bottom: 3px solid var(--smash-gold);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-    }}
-    .edition-inner {{ display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 10px 0; }}
-    .edition-label {{
-      font-size: 10px;
-      color: #FFD000;
-      margin-right: 6px;
-      white-space: nowrap;
-    }}
-    .edition-tab {{
-      appearance: none;
-      border: 2px solid #2D3548;
-      background: #1B2030;
-      color: #CBD5E1;
-      font-family: "Kanit", sans-serif;
-      font-size: 13px;
-      font-weight: 800;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      padding: 6px 14px;
-      cursor: pointer;
-      white-space: nowrap;
-      transform: skewX(-10deg);
-      transition: all 0.14s ease;
-    }}
-    .edition-tab span {{ display: inline-block; transform: skewX(10deg); }}
-    .edition-tab:hover {{ border-color: #FFD000; color: #FFFFFF; }}
-    .edition-tab.active {{
-      background: linear-gradient(135deg, #E60012 0%, #FF5E00 100%);
-      color: #FFFFFF;
-      border-color: #FFD000;
-      box-shadow: 2px 2px 0px #000000;
-    }}
-
-    /* Challenger Approaching Headline Section */
-    .hero {{
-      margin-top: 22px;
-      padding: 24px 26px;
-      background: var(--card);
-      border: 2.5px solid var(--frame);
-      border-left: 8px solid var(--smash-red);
-      border-radius: 8px;
-      box-shadow: var(--arcade-shadow);
-      position: relative;
-      overflow: hidden;
-    }}
-    .kicker {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--smash-red);
-      color: #FFFFFF;
-      font-family: "Kanit", sans-serif;
+      left: 0; right: 0; bottom: 0;
+      padding: 24px 16px 10px;
+      background: linear-gradient(0deg, rgba(16, 18, 23, 0.86) 0%, rgba(16, 18, 23, 0.0) 100%);
+      color: #F4F2EC;
       font-size: 12.5px;
-      font-weight: 900;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      padding: 4px 12px;
-      transform: skewX(-10deg);
-      margin-bottom: 12px;
-      box-shadow: 2px 2px 0px #0F121A;
-    }}
-    .kicker > span {{ transform: skewX(10deg); }}
-    .hero h1 {{
-      font-size: clamp(26px, 4.1vw, 41px);
-      line-height: 1.07;
-      max-width: 960px;
-      color: var(--ink);
-    }}
-    .hero-lede {{
-      margin-top: 13px;
-      font-size: 16px;
-      line-height: 1.58;
-      color: var(--ink-secondary);
-      max-width: 900px;
-    }}
-    .byline {{
-      margin-top: 16px;
-      padding-top: 12px;
-      border-top: 1.5px dashed var(--rule);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      font-size: 13px;
-      color: var(--ink-muted);
-    }}
-    .ledge-badge {{
-      background: #0F121A;
-      color: #FFD000;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: 700;
-      font-size: 12px;
+      flex-wrap: wrap;
     }}
 
-    /* 4 Arcade HUD Boxes */
-    .stat-strip {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)); gap: 14px; margin: 22px 0; }}
-    .stat-box {{
-      background: var(--card);
-      border: 2.5px solid var(--frame);
-      border-radius: 8px;
-      padding: 16px 17px;
-      box-shadow: var(--arcade-shadow);
-      position: relative;
-      overflow: hidden;
+    /* Calm Horizontal Edition Switcher */
+    .edition-bar {{ background: var(--bg-alt); border-bottom: 1px solid var(--rule); position: sticky; top: 0; z-index: 30; }}
+    .edition-inner {{ display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 10px 0; }}
+    .edition-label {{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-muted); margin-right: 4px; white-space: nowrap; }}
+    .edition-tab {{
+      appearance: none; border: 1px solid var(--rule); background: var(--card); color: var(--ink-secondary);
+      font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 5px; cursor: pointer; white-space: nowrap;
     }}
-    .stat-box::after {{
-      content: "";
-      position: absolute;
-      top: 0; right: 0;
-      width: 44px; height: 6px;
-      background: var(--smash-red);
-    }}
-    .stat-box-label {{
-      font-family: "Kanit", sans-serif;
-      font-size: 12.5px;
-      font-weight: 800;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--ink-muted);
-    }}
-    .stat-box-val {{
-      font-size: 28px;
-      line-height: 1.1;
-      margin-top: 5px;
-    }}
-    .stat-box-note {{ font-size: 13px; color: var(--ink-secondary); margin-top: 5px; line-height: 1.45; }}
+    .edition-tab:hover {{ color: var(--ink); background: var(--bg); }}
+    .edition-tab.active {{ background: var(--crimson); color: #FFFFFF; border-color: var(--crimson); }}
 
-    /* Section Headers with Smash Slash Accent */
-    .section {{ margin-top: 38px; }}
+    /* Editorial Lead Story */
+    .hero {{ padding: 26px 0 22px; border-bottom: 1px solid var(--rule); }}
+    .kicker {{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--crimson); margin-bottom: 8px; }}
+    .hero h1 {{ font-size: clamp(25px, 3.9vw, 39px); line-height: 1.15; letter-spacing: -0.02em; font-weight: 700; max-width: 920px; }}
+    .hero-lede {{ margin-top: 12px; font-size: 16.5px; line-height: 1.58; color: var(--ink-secondary); max-width: 880px; }}
+    .byline {{ margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-muted); }}
+
+    /* 4 Key Stat Cards */
+    .stat-strip {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 22px 0; }}
+    .stat-box {{ background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; box-shadow: var(--shadow); }}
+    .stat-box-label {{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }}
+    .stat-box-val {{ font-size: 23px; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }}
+    .stat-box-note {{ font-size: 13px; color: var(--ink-secondary); margin-top: 4px; line-height: 1.45; }}
+
+    /* Section Dividers */
+    .section {{ margin-top: 36px; }}
     .section-header {{
       display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 10px;
-      padding-bottom: 10px; border-bottom: 3px solid var(--frame); margin-bottom: 16px;
+      padding-bottom: 9px; border-bottom: 2px solid var(--rule-strong); margin-bottom: 16px;
     }}
-    [data-theme="dark"] .section-header {{ border-bottom-color: var(--smash-red); }}
-    .section-title-wrap {{ display: flex; align-items: center; gap: 10px; }}
-    .section-slash {{
-      display: inline-block;
-      width: 10px;
-      height: 24px;
-      background: linear-gradient(180deg, var(--smash-red), var(--smash-orange));
-      transform: skewX(-16deg);
-      flex-shrink: 0;
-    }}
-    .section-title {{ font-size: clamp(21px, 3vw, 27px); line-height: 1.1; }}
-    .section-sub {{ font-size: 13px; color: var(--ink-muted); font-weight: 600; }}
+    .section-title {{ font-size: 22px; font-weight: 700; letter-spacing: -0.015em; }}
+    .section-sub {{ font-size: 13px; color: var(--ink-muted); }}
 
-    /* 8-Player Smash Sudden Death Stage Panel */
-    .parity-panel {{
-      background: var(--card);
-      border: 2.5px solid var(--frame);
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: var(--arcade-shadow);
-    }}
-    .parity-tiers {{ display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }}
-    .tier-row {{
-      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-      padding: 13px 15px; border-radius: 6px;
-      border: 2px solid var(--rule);
-      background: var(--bg);
-    }}
-    .tier-row.highlight-boss {{
-      border-color: var(--smash-blue);
-      background: var(--slate-bg);
-    }}
-    .tier-row.highlight-parity {{
-      background: var(--amber-bg);
-      border: 2.5px solid #F59E0B;
-      box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.25);
-    }}
-    .tier-row.highlight-morgue {{
-      background: var(--crimson-bg);
-      border: 2px solid var(--crimson-border);
-    }}
-    .tier-tag {{
-      font-family: "Kanit", sans-serif;
-      font-size: 13.5px;
-      font-weight: 900;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      min-width: 245px;
-    }}
-    .tier-chips {{ display: flex; flex-wrap: wrap; gap: 7px; flex: 1; }}
-    .team-chip {{
-      font-family: "Chakra Petch", sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 6px 11px;
-      border-radius: 4px;
-      background: var(--card);
-      border: 2px solid var(--frame);
-      color: var(--ink);
-      cursor: pointer;
-      box-shadow: var(--arcade-shadow-sm);
-      transition: transform 0.1s ease, background 0.1s ease;
-    }}
-    .team-chip:hover {{
-      transform: translate(-1px, -1px);
-      background: var(--smash-red);
-      color: #FFFFFF;
-      border-color: #0F121A;
-    }}
+    /* Parity Tiers */
+    .parity-panel {{ background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 18px; box-shadow: var(--shadow); }}
+    .parity-tiers {{ display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }}
+    .tier-row {{ display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); }}
+    .tier-row.highlight-parity {{ background: var(--amber-bg); border-color: var(--amber-border); }}
+    .tier-row.highlight-morgue {{ background: var(--crimson-bg); border-color: var(--crimson-border); }}
+    .tier-tag {{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; min-width: 230px; }}
+    .tier-chips {{ display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }}
+    .team-chip {{ font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 5px; background: var(--card); border: 1px solid var(--rule); color: var(--ink); cursor: pointer; }}
+    .team-chip:hover {{ border-color: var(--ink); background: var(--bg-alt); }}
 
-    /* Smash Trophy Gallery Autopsy Card (Bad Mother Tucker's) */
-    .autopsy-card {{
-      background: var(--crimson-bg);
-      border: 3px solid var(--crimson);
-      border-radius: 10px;
-      padding: 22px;
-      box-shadow: var(--arcade-shadow);
-      position: relative;
-      overflow: hidden;
-    }}
-    .hazard-ribbon {{
-      background: repeating-linear-gradient(
-        -45deg,
-        #0F121A,
-        #0F121A 12px,
-        #FFD000 12px,
-        #FFD000 24px
-      );
-      height: 8px;
-      margin: -22px -22px 16px -22px;
-    }}
-    .autopsy-layout {{
-      display: grid;
-      grid-template-columns: 235px 1.25fr 1fr;
-      gap: 20px;
-      margin-top: 14px;
-      align-items: start;
-    }}
-    @media (max-width: 980px) {{
-      .autopsy-layout {{ grid-template-columns: 1fr; }}
-    }}
-    .trophy-showcase {{
-      background: #0B0D14;
-      border: 2.5px solid #FFD000;
+    /* Bad Mother Tucker's Autopsy + Trophy Photo */
+    .autopsy-card {{ background: var(--crimson-bg); border: 1px solid var(--crimson-border); border-radius: 8px; padding: 22px; box-shadow: var(--shadow); }}
+    .autopsy-grid {{ display: grid; grid-template-columns: 210px 1.25fr 1fr; gap: 20px; margin-top: 14px; align-items: start; }}
+    @media (max-width: 940px) {{ .autopsy-grid {{ grid-template-columns: 1fr; }} }}
+    .trophy-figure {{
+      background: var(--card);
+      border: 1px solid var(--rule);
       border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 3px 3px 0px #0F121A;
-      text-align: center;
+      padding: 8px;
+      box-shadow: var(--shadow);
+      max-width: 260px;
     }}
-    .trophy-showcase img {{
+    .trophy-figure img {{
       width: 100%;
       aspect-ratio: 1 / 1;
       object-fit: cover;
+      border-radius: 5px;
       display: block;
     }}
-    .trophy-caption {{
-      padding: 8px 10px;
-      background: #141826;
-      color: #FFD000;
-      font-size: 11px;
-      border-top: 2px solid #FFD000;
+    .trophy-figcaption {{
+      margin-top: 7px;
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      text-align: center;
     }}
-    .autopsy-list {{ list-style: none; display: flex; flex-direction: column; gap: 11px; }}
-    .autopsy-list li {{ font-size: 14.5px; line-height: 1.54; }}
-    .crime-box {{
-      background: var(--card);
-      border: 2px solid var(--frame);
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: var(--arcade-shadow-sm);
-    }}
+    .autopsy-list {{ list-style: none; display: flex; flex-direction: column; gap: 10px; }}
+    .autopsy-list li {{ font-size: 14.5px; line-height: 1.55; }}
+    .crime-box {{ background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 15px; }}
     .crime-row {{ display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }}
     .crime-row:last-child {{ border-bottom: none; }}
 
-    /* Tourney Standings Table */
-    .table-wrap {{
+    /* NEW: 15-Year Historical Chart (Team Names vs. Championships) */
+    .history-panel {{
       background: var(--card);
-      border: 2.5px solid var(--frame);
+      border: 1px solid var(--rule);
       border-radius: 8px;
-      overflow-x: auto;
-      box-shadow: var(--arcade-shadow);
+      padding: 20px;
+      box-shadow: var(--shadow);
     }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 13.5px; }}
-    th {{
-      text-align: left; padding: 11px 12px;
-      background: #0F121A;
-      color: #FFD000;
-      border-bottom: 2px solid var(--smash-red);
-      font-family: "Kanit", sans-serif;
-      font-size: 12.5px; font-weight: 800; font-style: italic;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      cursor: pointer; user-select: none; white-space: nowrap;
+    .history-callouts {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
     }}
-    th:hover {{ color: #FFFFFF; }}
-    th.num, td.num {{ text-align: right; }}
-    td {{ padding: 10px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; background: var(--card); }}
-    th.sticky-col, td.sticky-col {{ position: sticky; left: 0; z-index: 2; }}
-    th.sticky-col {{ background: #0F121A; z-index: 3; }}
-    tr.team-row {{ cursor: pointer; }}
-    tr.team-row:hover td {{ background: var(--slate-bg); }}
-    tr.playoff-cut td {{ border-bottom: 3px dashed var(--emerald); }}
-    .badge {{ display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 12px; font-weight: 700; }}
-    .badge-pos {{ background: var(--emerald-bg); color: var(--emerald); border: 1px solid var(--emerald-border); }}
-    .badge-neg {{ background: var(--crimson-bg); color: var(--crimson); border: 1px solid var(--crimson-border); }}
-    .badge-mid {{ background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }}
+    .history-callout {{
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: 7px;
+      padding: 13px 15px;
+    }}
+    .hc-kicker {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }}
+    .hc-val {{ font-size: 17px; font-weight: 700; margin-top: 3px; color: var(--ink); }}
+    .hc-note {{ font-size: 12.5px; color: var(--ink-secondary); margin-top: 3px; line-height: 1.45; }}
 
-    /* Character Select Filter Pills */
-    .filter-bar {{ display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }}
-    .filter-pill {{
-      appearance: none;
-      border: 2px solid var(--frame);
-      background: var(--card);
-      color: var(--ink-secondary);
-      font-family: "Kanit", sans-serif;
-      font-size: 12.5px; font-weight: 800; font-style: italic;
-      text-transform: uppercase;
-      padding: 6px 12px; border-radius: 4px; cursor: pointer;
-      box-shadow: var(--arcade-shadow-sm);
-    }}
-    .filter-pill:hover {{ color: var(--ink); border-color: var(--smash-red); }}
-    .filter-pill.active {{
-      background: var(--smash-red);
-      color: #FFFFFF;
-      border-color: #0F121A;
-    }}
-
-    /* Character Select Fighter Roast Cards (1P .. 12P) */
-    .roast-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(335px, 1fr)); gap: 18px; }}
-    .roast-card {{
-      background: var(--card);
-      border: 2.5px solid var(--frame);
-      border-radius: 9px;
-      overflow: hidden;
-      box-shadow: var(--arcade-shadow);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }}
-    .roast-card.is-bmt {{
-      border: 3px solid var(--crimson);
-    }}
-    .fighter-topbar {{
+    .history-toolbar {{
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 7px 14px;
-      color: #FFFFFF;
-      font-size: 12px;
-      font-weight: 800;
-      border-bottom: 2px solid var(--frame);
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 14px;
     }}
-    .fighter-port {{
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      letter-spacing: 0.06em;
+    .history-controls {{ display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }}
+    .history-legend {{ display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 12.5px; font-weight: 600; color: var(--ink-secondary); }}
+    .legend-item {{ display: inline-flex; align-items: center; gap: 7px; }}
+    .legend-swatch {{ width: 13px; height: 13px; border-radius: 3px; display: inline-block; }}
+    .swatch-names {{ background: var(--navy-bar); }}
+    .swatch-rings {{ background: var(--gold-bar); }}
+
+    .history-scale-head {{
+      display: grid;
+      grid-template-columns: 235px 1fr 125px;
+      gap: 16px;
+      padding: 0 12px 6px;
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      font-weight: 600;
     }}
-    .stock-row {{
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }}
-    .smash-stock {{
-      width: 14px;
-      height: 14px;
-      display: inline-block;
-    }}
-    .smash-stock.ko {{ opacity: 0.32; }}
-    .roast-inner {{
-      padding: 16px 18px 18px;
+    .scale-ticks {{
       display: flex;
-      flex-direction: column;
-      gap: 11px;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--rule);
+      padding-bottom: 4px;
+    }}
+    @media (max-width: 780px) {{
+      .history-scale-head {{ display: none; }}
+    }}
+
+    .history-rows {{ display: flex; flex-direction: column; gap: 8px; }}
+    .history-row {{
+      border: 1px solid var(--rule);
+      border-radius: 7px;
+      background: var(--bg);
+      padding: 11px 13px;
+      transition: background 0.14s ease, border-color 0.14s ease;
+      cursor: pointer;
+    }}
+    .history-row:hover {{ border-color: var(--ink-muted); }}
+    .history-row.is-alumni {{ opacity: 0.86; border-style: dashed; }}
+    .history-row-main {{
+      display: grid;
+      grid-template-columns: 235px 1fr 125px;
+      gap: 16px;
+      align-items: center;
+    }}
+    @media (max-width: 780px) {{
+      .history-row-main {{ grid-template-columns: 1fr; gap: 9px; }}
+    }}
+    .hr-who {{ min-width: 0; }}
+    .hr-mgr {{ font-weight: 700; font-size: 14.5px; color: var(--ink); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }}
+    .hr-alumni-tag {{
+      font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 1px 6px; border-radius: 4px; background: var(--bg-alt); color: var(--ink-muted); border: 1px solid var(--rule);
+    }}
+    .hr-cur {{ font-size: 12.5px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+
+    .hr-bars {{ display: flex; flex-direction: column; gap: 6px; }}
+    .bar-line {{ display: flex; align-items: center; gap: 9px; }}
+    .bar-track {{
       flex: 1;
+      height: 18px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      overflow: hidden;
       position: relative;
     }}
+    .bar-fill {{ height: 100%; border-radius: 3px 0 0 3px; transition: width 0.25s ease; }}
+    .bar-fill.names {{ background: var(--navy-bar); }}
+    .bar-fill.rings {{ background: var(--gold-bar); }}
+    .bar-stat {{
+      min-width: 145px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+    }}
+    @media (max-width: 520px) {{
+      .bar-stat {{ min-width: 118px; font-size: 12px; }}
+    }}
+    .bar-stat.has-rings {{ color: var(--amber); font-weight: 700; }}
+    .bar-stat.zero-rings {{ color: var(--ink-muted); font-weight: 500; }}
+
+    .hr-toggle {{
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      user-select: none;
+    }}
+    @media (max-width: 780px) {{ .hr-toggle {{ text-align: left; }} }}
+
+    .history-drawer {{
+      margin-top: 11px;
+      padding-top: 11px;
+      border-top: 1px solid var(--rule);
+      display: none;
+    }}
+    .history-row.open .history-drawer {{ display: block; }}
+    .hd-blurb {{ font-size: 13.5px; color: var(--ink-secondary); margin-bottom: 9px; line-height: 1.5; }}
+    .hd-chips {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+    .hd-chip {{
+      font-size: 12px;
+      padding: 4px 9px;
+      border-radius: 5px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+    }}
+    .hd-chip.champ-name {{
+      background: var(--gold-bg);
+      border-color: var(--gold-border);
+      font-weight: 700;
+    }}
+    .hd-yr {{ color: var(--ink-muted); font-size: 11.5px; margin-left: 3px; font-weight: 500; }}
+
+    /* Standings Table */
+    .table-wrap {{ background: var(--card); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto; box-shadow: var(--shadow); }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 13.5px; }}
+    th {{
+      text-align: left; padding: 11px 12px; background: var(--bg-alt); border-bottom: 1px solid var(--rule);
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }}
+    th:hover {{ color: var(--ink); }}
+    th.num, td.num {{ text-align: right; }}
+    td {{ padding: 10px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; background: var(--card); }}
+    th.sticky-col, td.sticky-col {{ position: sticky; left: 0; z-index: 2; }}
+    th.sticky-col {{ background: var(--bg-alt); z-index: 3; }}
+    tr.team-row {{ cursor: pointer; }}
+    tr.team-row:hover td {{ background: var(--slate-bg); }}
+    tr.playoff-cut td {{ border-bottom: 2px dashed var(--emerald); }}
+    .badge {{ display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 12px; font-weight: 700; }}
+    .badge-pos {{ background: var(--emerald-bg); color: var(--emerald); }}
+    .badge-neg {{ background: var(--crimson-bg); color: var(--crimson); }}
+    .badge-mid {{ background: var(--amber-bg); color: var(--amber); }}
+
+    /* Filter Pills */
+    .filter-bar {{ display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }}
+    .filter-pill {{
+      appearance: none; border: 1px solid var(--rule); background: var(--card); color: var(--ink-secondary);
+      font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 5px; cursor: pointer;
+    }}
+    .filter-pill:hover {{ color: var(--ink); background: var(--bg-alt); }}
+    .filter-pill.active {{ background: var(--ink); color: var(--bg); border-color: var(--ink); }}
+
+    /* Franchise Roast Cards */
+    .roast-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(325px, 1fr)); gap: 16px; }}
+    .roast-card {{
+      background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 18px;
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 11px; position: relative; overflow: hidden;
+    }}
+    .roast-card.is-bmt {{ border-color: var(--crimson); }}
     .roast-watermark {{
-      position: absolute;
-      right: -12px;
-      bottom: -12px;
-      width: 120px;
-      height: 120px;
-      opacity: 0.045;
-      pointer-events: none;
+      position: absolute; right: -14px; bottom: -14px; width: 110px; height: 110px;
+      opacity: 0.035; pointer-events: none;
     }}
     .roast-head {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }}
-    .roast-team {{ font-size: 22px; line-height: 1.08; color: var(--ink); }}
-    .roast-mgr {{ font-size: 13px; color: var(--ink-muted); font-weight: 600; margin-top: 2px; }}
-    .splash-ribbon {{
-      display: inline-block;
-      align-self: flex-start;
-      background: #0F121A;
-      color: #FFD000;
-      font-family: "Kanit", sans-serif;
-      font-weight: 800;
-      font-style: italic;
-      font-size: 13px;
-      padding: 3px 11px;
-      border-left: 4px solid var(--smash-red);
-      transform: skewX(-8deg);
+    .roast-seed {{ font-size: 12px; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
+    .roast-team {{ font-size: 19.5px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; margin-top: 2px; }}
+    .roast-mgr {{ font-size: 13px; color: var(--ink-muted); }}
+    .roast-epithet {{ font-size: 13.5px; font-style: italic; color: var(--crimson); font-weight: 600; }}
+    .roast-metrics {{
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 9px;
+      background: var(--bg); border-radius: 6px; border: 1px solid var(--rule); text-align: center;
     }}
-    [data-theme="dark"] .splash-ribbon {{ background: #232B42; }}
-    .splash-ribbon span {{ display: inline-block; transform: skewX(8deg); }}
-
-    /* Smash Bros Bottom-HUD Damage % + Metrics Strip */
-    .roast-hud {{
-      display: grid;
-      grid-template-columns: 1.15fr repeat(4, 1fr);
-      gap: 5px;
-      padding: 9px 8px;
-      background: #0F121A;
-      color: #FFFFFF;
-      border-radius: 6px;
-      border: 2px solid var(--frame);
-      text-align: center;
-      align-items: center;
-    }}
-    .dmg-meter {{
-      border-right: 1px solid rgba(255, 255, 255, 0.16);
-      padding-right: 6px;
-    }}
-    .dmg-val {{
-      font-size: 20px;
-      line-height: 1;
-      text-shadow: 2px 2px 0px #000000;
-    }}
-    .dmg-pct {{ font-size: 12px; }}
-    .rm-label {{ font-size: 10.5px; color: #94A3B8; text-transform: uppercase; font-weight: 700; }}
-    .rm-val {{ font-size: 13px; font-weight: 700; margin-top: 2px; color: #F8FAFC; }}
-
+    .rm-label {{ font-size: 11.5px; color: var(--ink-muted); }}
+    .rm-val {{ font-size: 13.5px; font-weight: 700; margin-top: 2px; }}
     .roast-crime {{
-      font-size: 12.5px; font-weight: 700; padding: 7px 10px; border-radius: 5px;
-      background: var(--amber-bg); color: var(--amber); border: 1.5px solid var(--amber-border);
+      font-size: 12.5px; font-weight: 600; padding: 7px 10px; border-radius: 5px;
+      background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border);
     }}
-    .roast-body {{ font-size: 14.5px; line-height: 1.57; color: var(--ink); position: relative; z-index: 1; }}
+    .roast-body {{ font-size: 14.5px; line-height: 1.58; color: var(--ink); position: relative; z-index: 1; }}
 
     .spark-wrap {{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; align-items: end; padding-top: 6px; margin-top: auto; }}
     .spark-col {{ display: flex; flex-direction: column; align-items: center; gap: 3px; }}
-    .spark-bar-bg {{ width: 100%; height: 42px; background: var(--bg-alt); border-radius: 3px; border: 1px solid var(--rule); display: flex; align-items: flex-end; overflow: hidden; }}
-    .spark-bar {{ width: 100%; }}
-    .spark-bar.win {{ background: linear-gradient(180deg, #10B981, #047857); }}
-    .spark-bar.loss {{ background: linear-gradient(180deg, #F43F5E, #BE123C); }}
-    .spark-pts {{ font-size: 11.5px; color: var(--ink-secondary); font-weight: 700; }}
-    .spark-wk {{ font-size: 11px; color: var(--ink-muted); }}
+    .spark-bar-bg {{ width: 100%; height: 42px; background: var(--bg-alt); border-radius: 3px; display: flex; align-items: flex-end; overflow: hidden; }}
+    .spark-bar {{ width: 100%; border-radius: 3px 3px 0 0; }}
+    .spark-bar.win {{ background: var(--emerald); }}
+    .spark-bar.loss {{ background: var(--crimson); }}
+    .spark-pts {{ font-size: 11.5px; color: var(--ink-secondary); }}
+    .spark-wk {{ font-size: 11.5px; color: var(--ink-muted); }}
 
-    /* Versus Screen Matchup Cards */
-    .matchup-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }}
-    .matchup-card {{
-      background: var(--card);
-      border: 2.5px solid var(--frame);
-      border-radius: 8px;
-      padding: 14px 16px;
-      box-shadow: var(--arcade-shadow);
-    }}
+    /* Matchup Cards */
+    .matchup-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(305px, 1fr)); gap: 14px; }}
+    .matchup-card {{ background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 15px 16px; box-shadow: var(--shadow); }}
     .mc-row {{ display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 14.5px; }}
     .mc-row.winner {{ font-weight: 700; }}
     .mc-row.loser {{ color: var(--ink-muted); }}
-    .vs-divider {{
-      display: flex; align-items: center; gap: 8px; margin: 2px 0;
-    }}
-    .vs-divider::before, .vs-divider::after {{
-      content: ""; flex: 1; height: 1px; background: var(--rule);
-    }}
-    .vs-pill {{
-      background: linear-gradient(135deg, #E60012, #FF5E00);
-      color: #FFFFFF;
-      font-family: "Kanit", sans-serif;
-      font-weight: 900;
-      font-style: italic;
-      font-size: 11px;
-      padding: 1px 8px;
-      border-radius: 3px;
-      transform: skewX(-12deg);
-    }}
-    .mc-foot {{
-      margin-top: 9px; padding-top: 8px; border-top: 1.5px dashed var(--rule);
-      font-size: 12.5px; color: var(--ink-secondary); display: flex; justify-content: space-between; gap: 8px;
-    }}
+    .mc-foot {{ margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-secondary); display: flex; justify-content: space-between; gap: 8px; }}
 
     .toast {{
-      position: fixed; bottom: 20px; right: 20px;
-      background: #0F121A; color: #FFD000;
-      border: 2px solid #E60012;
-      padding: 10px 16px; border-radius: 6px;
-      font-family: "Kanit", sans-serif; font-size: 13.5px; font-weight: 800; font-style: italic; text-transform: uppercase;
-      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45); opacity: 0; pointer-events: none;
+      position: fixed; bottom: 20px; right: 20px; background: var(--ink); color: var(--bg);
+      padding: 10px 15px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); opacity: 0; pointer-events: none;
       transform: translateY(8px); transition: all 0.2s ease; z-index: 100;
     }}
     .toast.show {{ opacity: 1; transform: translateY(0); }}
@@ -1228,29 +1283,22 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
   </style>
 </head>
 <body>
-  <!-- Reusable Super Smash Bros. Crosshair Emblem SVG Definitions -->
+  <!-- Subtle Super Smash Bros. Emblem SVG Definitions -->
   <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
     <defs>
-      <linearGradient id="smash-flame-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#FFE600" />
-        <stop offset="45%" stop-color="#FF5E00" />
-        <stop offset="100%" stop-color="#E60012" />
-      </linearGradient>
-      <linearGradient id="smash-ko-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#64748B" />
-        <stop offset="100%" stop-color="#334155" />
+      <linearGradient id="smash-crest-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#F59E0B" />
+        <stop offset="50%" stop-color="#DC2626" />
+        <stop offset="100%" stop-color="#991B1B" />
       </linearGradient>
       <mask id="smash-ball-cutout">
         <rect x="0" y="0" width="100" height="100" fill="black" />
         <circle cx="50" cy="50" r="46" fill="white" />
-        <rect x="24" y="0" width="15" height="100" fill="black" />
+        <rect x="24" y="0" width="14" height="100" fill="black" />
         <rect x="0" y="60" width="100" height="10" fill="black" />
       </mask>
-      <symbol id="smash-ball-flame" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="url(#smash-flame-grad)" mask="url(#smash-ball-cutout)" />
-      </symbol>
-      <symbol id="smash-ball-ko" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="url(#smash-ko-grad)" mask="url(#smash-ball-cutout)" />
+      <symbol id="smash-ball-crest" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="url(#smash-crest-grad)" mask="url(#smash-ball-cutout)" />
       </symbol>
       <symbol id="smash-ball-mono" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="46" fill="currentColor" mask="url(#smash-ball-cutout)" />
@@ -1261,98 +1309,94 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
   <header class="masthead">
     <div class="container">
       <div class="masthead-top">
-        <span class="pixel rules-ticker">NO TRADES • SUPERFLEX ONLY • FINAL DESTINATION • 12-FIGHTER PPR</span>
+        <span>Vol. X • {html.escape(model['leagueName'])} • 12-Team Superflex PPR</span>
         <div class="masthead-actions">
           <button id="btn-copy-link" class="btn btn-primary" type="button">Copy Group-Chat Link</button>
-          <button id="btn-theme" class="btn btn-masthead" type="button">Final Destination (Dark)</button>
-          <a class="btn btn-masthead" href="https://fantasy.espn.com/football/league?leagueId={model['leagueId']}" target="_blank" rel="noopener">ESPN Arena</a>
+          <button id="btn-theme" class="btn" type="button">Night Mode</button>
+          <a class="btn" href="https://fantasy.espn.com/football/league?leagueId={model['leagueId']}" target="_blank" rel="noopener">ESPN League</a>
         </div>
       </div>
 
-      <div class="arena-banner">
+      <div class="brand-row">
+        <div class="brand-heading">
+          <svg class="brand-crest" viewBox="0 0 100 100" aria-hidden="true">
+            <use href="#smash-ball-crest"></use>
+          </svg>
+          <div class="brand-title serif">The Alliance Dispatch</div>
+        </div>
+        <div class="brand-sub">Office of League Communications • Dispatches Live From the 12th-Place Bunker at Bad Mother Tucker's HQ</div>
+      </div>
+
+      <div class="artwork-banner">
         <img
-          class="arena-img"
           src="{html.escape(hero_img_src)}"
           onerror="this.onerror=null;this.src='{html.escape(og_image_url)}';"
-          alt="Super Smash Alliance 10.0 Final Destination Football Arena"
+          alt="The Super Smash Alliance 10.0 Stadium Illustration"
         />
-        <div class="arena-scrim"></div>
-        <div class="arena-content">
-          <svg class="brand-emblem" viewBox="0 0 100 100" aria-hidden="true">
-            <use href="#smash-ball-flame"></use>
-          </svg>
-          <div>
-            <div class="brand-title smash-display">{html.escape(model['leagueName'])}</div>
-            <div class="brand-sub">
-              <span class="brand-pill">THE ALLIANCE DISPATCH</span>
-              Broadcast Live From the 12th-Place Blast Zone at Bad Mother Tucker's HQ
-            </div>
-          </div>
+        <div class="artwork-caption">
+          <span><strong>{html.escape(model['leagueName'])}</strong> • Est. 2012 (15th Anniversary Season)</span>
+          <span class="mono">0 Trades • 6 Teams Tied at 4-3 • 14 Historical Rings</span>
         </div>
       </div>
     </div>
   </header>
 
-  <nav class="edition-bar" aria-label="Stage Select Editions">
+  <nav class="edition-bar" aria-label="Recap Editions">
     <div class="container edition-inner" id="edition-tabs">
-      <span class="edition-label pixel">STAGE SELECT:</span>
+      <span class="edition-label">Editions:</span>
     </div>
   </nav>
 
   <main class="container">
     <div id="view-midseason">
       <section class="hero">
-        <div class="kicker"><span>CHALLENGER APPROACHING! • MIDSEASON ROAST (STAGE {model['completedWeeks']} OF 14)</span></div>
-        <h1 class="smash-display">8-Player Sudden Death: 8 of You Are Trapped on One Platform, and I Already SD'd Off the Stage</h1>
+        <div class="kicker">Special Midseason Roast • Through Week {model['completedWeeks']} of 14</div>
+        <h1 class="serif">Halfway Through the Season: 8 of You Are the Spider-Man Pointing Meme, and I Am Already Dead</h1>
         <p class="hero-lede">
-          Welcome to the midpoint of <strong>The Super Smash Alliance 10.0</strong>: <strong>zero trades executed</strong>,
-          <strong>six consecutive fighters deadlocked at 4-3 (4 stocks left)</strong>, <strong>eight of twelve managers crammed inside an
-          8-Player Smash Sudden Death mosh pit</strong> within one game of .500, Kyle Feeney camping in 2nd place on
-          <em>CPU Level 1</em> after making ONE waiver move since August, and your Head of Communications blasted off screen
-          at <strong>1-6 (-261.64 Diff • 262% Damage)</strong>.
+          We have reached the midpoint of The Super Smash Alliance 10.0 regular season with <strong>zero trades executed</strong>,
+          <strong>six consecutive teams deadlocked at 4-3</strong>, <strong>eight of twelve managers crammed within a single game of .500</strong>,
+          Kyle Feeney sitting in 2nd place after making <em>one</em> waiver move since August, and your Head of Communications
+          reporting from a 1-6 crater with a -261.64 point differential.
         </p>
         <div class="byline">
-          <span>Announcer: <strong>Josh Briskman</strong> (12P • 1-6 • Permanent #1 Waiver Respawn)</span>
-          <span class="ledge-badge mono">FINAL PLAYOFF LEDGE (#6 vs #7): 2.30 PTS</span>
+          <span>By <strong>Josh Briskman</strong> (Head of Comms • 1-6 • #1 Waiver Priority Forever)</span>
+          <span class="mono">Playoff Cutoff Margin (#6 vs #7): 2.30 Pts</span>
         </div>
       </section>
 
       <div class="stat-strip">
         <div class="stat-box">
-          <div class="stat-box-label">8-Player Sudden Death</div>
-          <div class="stat-box-val smash-hud">8 OF 12 FIGHTERS</div>
-          <div class="stat-box-note">Seeds #2 (5-2) through #9 (3-4) locked within ±1 stock of 4-3; 6 fighters tied at 4-3</div>
+          <div class="stat-box-label">The Parity Mosh Pit</div>
+          <div class="stat-box-val mono">8 of 12 Teams</div>
+          <div class="stat-box-note">Seeds #2 (5-2) through #9 (3-4) separated by 1 game of 4-3; 6 teams tied at 4-3</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Playoff Ledge-Grab</div>
-          <div class="stat-box-val smash-hud" style="color: var(--emerald);">2.30 POINTS</div>
-          <div class="stat-box-note">#6 Huffner (918.32 PF) hangs onto the final chair over #7 #FedOut (916.02 PF)</div>
+          <div class="stat-box-label">Playoff Bubble Razor</div>
+          <div class="stat-box-val mono">2.30 Points</div>
+          <div class="stat-box-note">#6 Huffner (918.32 PF) holds the final chair over #7 #FedOut (916.02 PF)</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">AFK Controller Trophy</div>
-          <div class="stat-box-val smash-hud" style="color: var(--smash-blue);">+1.91 LUCKY W's</div>
-          <div class="stat-box-note">Feeney (5-2) is 9th in PF (856.4), 34-43 All-Play, with ONE (1) waiver move all year</div>
+          <div class="stat-box-label">Casino Heist Trophy</div>
+          <div class="stat-box-val mono">+1.91 Wins</div>
+          <div class="stat-box-note">Feeney (5-2) is 9th in PF (856.4), 34-43 All-Play, with 1 waiver move all year</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Blast-Zone Damage Meter</div>
-          <div class="stat-box-val smash-hud" style="color: var(--crimson);">262% DAMAGE</div>
-          <div class="stat-box-note">Bad Mother Tucker's (-261.64 Diff): #12 PF (753.16), #12 PA (1,014.80), L6 KO streak</div>
+          <div class="stat-box-label">Comms Desk Morgue</div>
+          <div class="stat-box-val mono" style="color: var(--crimson);">-261.64 Diff</div>
+          <div class="stat-box-note">Bad Mother Tucker's: #12 PF (753.16), #12 PA (1,014.80), L6 skid, 2.6% odds</div>
         </div>
       </div>
 
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display">8-Player Smash (Sudden Death 300%): Six Fighters Tied at 4-3</h2>
-          </div>
-          <span class="section-sub">Tap any fighter badge to warp straight to their Character Card</span>
+          <h2 class="section-title serif">The 8-of-12 Parity Circus: Six Guys at 4-3, Eight Teams in a Phone Booth</h2>
+          <span class="section-sub">Tap any team chip to jump straight to their roast</span>
         </div>
         <div class="parity-panel">
           <p style="color: var(--ink-secondary); font-size: 14.5px;">
-            Only <strong>6 tournament brackets</strong> advance to December, yet <strong>8 fighters sit at 4-3 or better</strong>—meaning two winning
-            records are getting edge-guarded straight into the consolation pit—while <strong>Seeds #2 through #9 (two-thirds of the entire roster)</strong>
-            are separated by a single Sunday stock. Naturally, <strong>0 trades</strong> have happened because everyone thinks their mid-tier main is S-Tier.
+            Only <strong>6 playoff chairs</strong> exist, yet <strong>8 teams sit at 4-3 or better</strong>—meaning two winning records are
+            headed straight to the consolation bracket—while <strong>Seeds #2 through #9 (two-thirds of the league)</strong> sit within one Sunday
+            swing of the six-way 4-3 pileup. Naturally, <strong>0 trades</strong> have been made because everyone thinks their mediocre roster is one backup TE away.
           </p>
           <div class="parity-tiers" id="parity-tiers"></div>
         </div>
@@ -1360,39 +1404,37 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display">Trophy Gallery: Bad Mother Tucker's 1-6 Self-Destruct Pedestal</h2>
-          </div>
-          <span class="section-sub">"GAME!" — You cannot KO a man who side-B'd off Final Destination in Week 2</span>
+          <h2 class="section-title serif">Self-Roast First: The Autopsy of Bad Mother Tucker's (#12 • 1-6)</h2>
+          <span class="section-sub">You cannot hurt a man who has been clinically deceased since Week 2</span>
         </div>
         <div class="autopsy-card">
-          <div class="hazard-ribbon"></div>
-          <p style="font-size: 15px; font-weight: 700;">
-            Before anyone types "fix your own roster, Josh," allow Player 12 to inspect his own smoking trophy in the vault first:
+          <p style="font-size: 15px; font-weight: 600;">
+            Before anyone replies "focus on your own lineup, Josh," allow the Office of Communications to empty the clip on itself first:
           </p>
-          <div class="autopsy-layout">
-            <div class="trophy-showcase">
+          <div class="autopsy-grid">
+            <figure class="trophy-figure">
               <img
                 src="{html.escape(trophy_img_src)}"
                 onerror="this.onerror=null;this.src='{html.escape(PUBLIC_SITE_URL)}assets/smash-bmt-trophy.jpg';"
-                alt="Bad Mother Tucker's Cracked Football Helmet Smash Trophy"
+                alt="Bad Mother Tucker's Cracked Helmet Last-Place Trophy"
               />
-              <div class="trophy-caption smash-hud">TROPHY #012 • "CLINICALLY K.O.'D" (1-6)</div>
-            </div>
+              <figcaption class="trophy-figcaption">
+                Exhibit A: The 2026 Bad Mother Tucker's Last-Place Trophy (<span class="mono">1-6</span>, <span class="mono">-261.64</span> Diff)
+              </figcaption>
+            </figure>
             <ul class="autopsy-list">
-              <li><strong>Wasted Final Smash in Week 1:</strong> Dropped <span class="mono">153.64</span> on Owen in Week 1 to open 1-0, taunted on the ledge, and immediately lost <strong>6 straight stocks</strong>—finishing as the weekly low scorer 3 times in 4 weeks (<span class="mono">100.88</span>, <span class="mono">87.14</span>, <span class="mono">93.46</span>, plus <span class="mono">81.20</span> in Wk 6).</li>
-              <li><strong>300% Stamina Handicap + Worst Hitbox:</strong> Opponents average a league-high <span class="mono">144.97 PPG</span> (<span class="mono">1,014.80 PA</span>) against us—highlighted by Wills' <span class="mono">207.86</span>-point Final Smash execution in Week 2 (-106.98 margin) and Billy's <span class="mono">183.00</span> combo in Week 5. And we can't even blame RNG because we <em>also</em> rank dead last in scoring (<span class="mono">753.16 PF</span>, nearly 80 pts behind 11th).</li>
-              <li><strong>Unlockable Joke Character at QB1:</strong> Currently maining <strong>Tanner McKee (<span class="mono">23.14</span> season pts)</strong> in Superflex while camping #1 resetting waivers. ESPN still gives us a <span class="mono">2.6%</span> playoff chance—pure Nintendo rubber-banding myth.</li>
+              <li><strong>Peaked in Week 1:</strong> Dropped <span class="mono">153.64</span> on Owen in Week 1 to go 1-0, started measuring ring sizes, and immediately lost <strong>6 straight games</strong>—finishing as the weekly low scorer 3 times in 4 weeks (<span class="mono">100.88</span>, <span class="mono">87.14</span>, <span class="mono">93.46</span>, plus <span class="mono">81.20</span> in Wk 6).</li>
+              <li><strong>Both Terrible AND Cursed:</strong> Opponents average a league-high <span class="mono">144.97 PPG</span> (<span class="mono">1,014.80 PA</span>) against us—highlighted by Wills' <span class="mono">207.86</span>-point thermonuclear execution in Week 2 (-106.98 margin) and Billy's <span class="mono">183.00</span> in Week 5. Yet we can't even cry schedule luck because we <em>also</em> rank dead last in scoring (<span class="mono">753.16 PF</span>, nearly 80 pts behind 11th and 346.66 behind Wills).</li>
+              <li><strong>Superflex Masterclass:</strong> Currently rolling out <strong>Tanner McKee (<span class="mono">23.14</span> season pts)</strong> at QB1 while squatting permanently on #1 weekly resetting waivers. ESPN still gives us a <span class="mono">2.6%</span> playoff chance—proof AI hallucination is very real.</li>
             </ul>
             <div class="crime-box">
-              <div class="smash-display" style="font-size: 14px; color: var(--crimson); margin-bottom: 8px;">
-                Poké Ball / Item RNG From Hell (Rds 1–4 vs. Reality)
+              <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--crimson); margin-bottom: 8px;">
+                Draft Board Built in Hell (Rounds 1–4 vs. Reality)
               </div>
-              <div class="crime-row"><span><strong>Rd 1 (#7)</strong> Jalen Hurts (QB)</span><span class="mono" style="color: var(--crimson);">K.O. / Off Roster</span></div>
+              <div class="crime-row"><span><strong>Rd 1 (#7)</strong> Jalen Hurts (QB)</span><span class="mono" style="color: var(--crimson);">IR / Off Roster</span></div>
               <div class="crime-row"><span><strong>Rd 2 (#18)</strong> Justin Jefferson (WR)</span><span class="mono">72.10 pts (#6 on team)</span></div>
-              <div class="crime-row"><span><strong>Rd 3 (#31)</strong> Kyler Murray (QB)</span><span class="mono">53.68 pts (Outscored by K)</span></div>
-              <div class="crime-row"><span><strong>Rd 4 (#42)</strong> Breece Hall (RB)</span><span class="mono">43.50 pts (Benched)</span></div>
+              <div class="crime-row"><span><strong>Rd 3 (#31)</strong> Kyler Murray (QB)</span><span class="mono">53.68 pts (Beat by Kicker)</span></div>
+              <div class="crime-row"><span><strong>Rd 4 (#42)</strong> Breece Hall (RB)</span><span class="mono">43.50 pts (Riding Pine)</span></div>
               <div class="crime-row"><span><strong>Rd 10 (#114)</strong> Brandon Aubrey (K)</span><span class="mono" style="color: var(--emerald);">58.00 pts (&gt; Kyler)</span></div>
               <div class="crime-row"><span><strong>Rd 14 (#162)</strong> Steelers D/ST</span><span class="mono" style="color: var(--emerald);">57.00 pts (&gt; Kyler)</span></div>
             </div>
@@ -1400,29 +1442,74 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         </div>
       </section>
 
+      <section class="section" id="history-section">
+        <div class="section-header">
+          <h2 class="section-title serif">15 Years of Alliance Lore (2012–2026): Team Names vs. Championships</h2>
+          <span class="section-sub">Click any manager row to inspect every historical team name &amp; title year</span>
+        </div>
+        <div class="history-panel">
+          <div class="history-callouts">
+            <div class="history-callout">
+              <div class="hc-kicker">Witness Protection Award</div>
+              <div class="hc-val">D B — 12 Names, 0 Rings</div>
+              <div class="hc-note">A fresh rebrand almost every August since 2012; still waiting on trophy number one.</div>
+            </div>
+            <div class="history-callout">
+              <div class="hc-kicker">Fallen Dynasty</div>
+              <div class="hc-val">Josh — 4 Titles, Now 1-6</div>
+              <div class="hc-note">Owns 4 of 14 historical rings (2015, '17, '20, '21) and currently sits dead last starting Tanner McKee.</div>
+            </div>
+            <div class="history-callout">
+              <div class="hc-kicker">ESPN Auto-Fill Club</div>
+              <div class="hc-val">3 Rings on "Team LastName"</div>
+              <div class="hc-note">O'Keefe (2) &amp; Jackson (1) won titles without touching settings; Wills &amp; Huffner have 0 in 22 combined seasons.</div>
+            </div>
+          </div>
+
+          <div class="history-toolbar">
+            <div class="history-controls">
+              <button type="button" class="filter-pill active" data-hsort="names">Sort: Most Team Names</button>
+              <button type="button" class="filter-pill" data-hsort="rings">Sort: Most Championships</button>
+              <button type="button" class="filter-pill" data-hsort="ratio">Sort: Rings / Name</button>
+              <button type="button" class="btn" id="btn-expand-names">Expand All Names</button>
+              <button type="button" class="btn" id="btn-toggle-alumni">Include 4 Retired Alumni</button>
+            </div>
+            <div class="history-legend">
+              <span class="legend-item"><span class="legend-swatch swatch-names"></span> Distinct Team Names (2012–26)</span>
+              <span class="legend-item"><span class="legend-swatch swatch-rings"></span> Championships Won (2012–25)</span>
+            </div>
+          </div>
+
+          <div class="history-scale-head mono">
+            <div>Manager (Current Franchise)</div>
+            <div class="scale-ticks"><span>0</span><span>3</span><span>6</span><span>9</span><span>12</span></div>
+            <div style="text-align:right;">Name Archive</div>
+          </div>
+
+          <div class="history-rows" id="history-chart-rows"></div>
+        </div>
+      </section>
+
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display">Tournament Bracket Receipts: Stocks, All-Play &amp; RNG Luck</h2>
-          </div>
-          <span class="section-sub">Click any column header to sort • Dashed emerald line = Top-6 Bracket Ledge</span>
+          <h2 class="section-title serif">Midseason Receipts: Standings, All-Play &amp; Schedule Luck</h2>
+          <span class="section-sub">Click any column header to sort • Dashed emerald line = Top-6 Playoff Cutoff</span>
         </div>
         <div class="table-wrap">
           <table id="standings-table">
             <thead>
               <tr>
-                <th data-sort="seed">Slot</th>
-                <th data-sort="name" class="sticky-col">Fighter (Manager)</th>
-                <th data-sort="wins" class="num">Stocks (W-L)</th>
+                <th data-sort="seed">Seed</th>
+                <th data-sort="name" class="sticky-col">Team (Manager)</th>
+                <th data-sort="wins" class="num">Record</th>
                 <th class="num">Streak</th>
                 <th data-sort="pf" class="num">Points For</th>
-                <th data-sort="pa" class="num">Damage Taken</th>
+                <th data-sort="pa" class="num">Points Against</th>
                 <th data-sort="diff" class="num">Diff</th>
                 <th data-sort="allPlayPct" class="num">All-Play</th>
-                <th data-sort="luck" class="num">RNG Luck</th>
+                <th data-sort="luck" class="num">LuckWins</th>
                 <th data-sort="moves" class="num">Moves</th>
-                <th data-sort="playoffPct" class="num">Bracket %</th>
+                <th data-sort="playoffPct" class="num">Playoff %</th>
               </tr>
             </thead>
             <tbody id="standings-tbody"></tbody>
@@ -1432,11 +1519,8 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
       <section class="section" id="roasts-section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display">Choose Your Fighter: All 12 Franchises Roasted</h2>
-          </div>
-          <span class="section-sub">Filter by battle tier or select a friend's fighter slot</span>
+          <h2 class="section-title serif">All 12 Franchises, Roasted With Receipts</h2>
+          <span class="section-sub">Filter by tier or tap your friend's name to isolate their crime scene</span>
         </div>
         <div class="filter-bar" id="team-filters"></div>
         <div class="roast-grid" id="roast-grid"></div>
@@ -1444,11 +1528,8 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display">Challengers Approaching: Stage {model['upcomingWeek']} Versus Screen</h2>
-          </div>
-          <span class="section-sub">Next round of Sudden Death elimination matchups</span>
+          <h2 class="section-title serif">Week {model['upcomingWeek']} Chaos Watch</h2>
+          <span class="section-sub">Upcoming slate entering the back half of the regular season</span>
         </div>
         <div class="matchup-grid" id="upcoming-grid"></div>
       </section>
@@ -1456,12 +1537,12 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
     <div id="view-weekly" class="hidden">
       <section class="hero">
-        <div class="kicker"><span id="wk-kicker"></span></div>
-        <h1 class="smash-display" id="wk-headline"></h1>
+        <div class="kicker" id="wk-kicker"></div>
+        <h1 class="serif" id="wk-headline"></h1>
         <p class="hero-lede" id="wk-subhead"></p>
         <div class="byline">
-          <span>Announcer: <strong>Office of League Communications</strong> • The Super Smash Alliance 10.0</span>
-          <span class="ledge-badge mono" id="wk-median-badge"></span>
+          <span>By <strong>Office of League Communications</strong> • The Super Smash Alliance 10.0</span>
+          <span class="mono" id="wk-median-badge"></span>
         </div>
       </section>
 
@@ -1469,33 +1550,27 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display" id="wk-scoreboard-title">Stage Results</h2>
-          </div>
-          <span class="section-sub">Sorted by highest-damage matchup</span>
+          <h2 class="section-title serif" id="wk-scoreboard-title">Week Box Scores</h2>
+          <span class="section-sub">Sorted by highest-scoring matchup</span>
         </div>
         <div class="matchup-grid" id="wk-games-grid"></div>
       </section>
 
       <section class="section">
         <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-slash"></span>
-            <h2 class="section-title smash-display" id="wk-standings-title">Tournament Standings Snapshot</h2>
-          </div>
-          <span class="section-sub">Cumulative bracket standings at the end of this stage</span>
+          <h2 class="section-title serif" id="wk-standings-title">Standings Snapshot</h2>
+          <span class="section-sub">Cumulative league table at the conclusion of this week</span>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Slot</th>
-                <th class="sticky-col">Fighter (Manager)</th>
-                <th class="num">Stocks (W-L)</th>
-                <th class="num">Stage Pts</th>
+                <th>Rank</th>
+                <th class="sticky-col">Team (Manager)</th>
+                <th class="num">Record</th>
+                <th class="num">Week Score</th>
                 <th class="num">Season PF</th>
-                <th class="num">Damage Taken</th>
+                <th class="num">Season PA</th>
                 <th class="num">Diff</th>
               </tr>
             </thead>
@@ -1514,40 +1589,6 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
     const BASE_PREFIX = "{html.escape(base_prefix)}";
     const PUBLIC_SITE_URL = "{html.escape(PUBLIC_SITE_URL)}";
     const TEAMS_BY_ID = Object.fromEntries(LEAGUE_DATA.teams.map(t => [t.id, t]));
-
-    const PLAYER_PORT_STYLES = {{
-      1:  {{ tag: "1P • TOP SEED",      bg: "linear-gradient(135deg, #E60012, #B8000E)" }},
-      2:  {{ tag: "2P • CPU LV.1 AFK",  bg: "linear-gradient(135deg, #0068B7, #004B87)" }},
-      3:  {{ tag: "3P • FINAL SMASH",   bg: "linear-gradient(135deg, #D97706, #B45309)" }},
-      4:  {{ tag: "4P • ARCH-RIVAL",    bg: "linear-gradient(135deg, #009E52, #00703A)" }},
-      5:  {{ tag: "5P • ZERO-RNG MAIN", bg: "linear-gradient(135deg, #F96302, #C2410C)" }},
-      6:  {{ tag: "6P • LEDGE GRABBER", bg: "linear-gradient(135deg, #00838F, #006064)" }},
-      7:  {{ tag: "7P • BUTTON MASHER", bg: "linear-gradient(135deg, #8E24AA, #6A1B9A)" }},
-      8:  {{ tag: "8P • DUCT-TAPE",     bg: "linear-gradient(135deg, #455A64, #263238)" }},
-      9:  {{ tag: "9P • SHIELD BROKEN", bg: "linear-gradient(135deg, #D81B60, #AD1457)" }},
-      10: {{ tag: "10P • OVERKILL",     bg: "linear-gradient(135deg, #6D4C41, #4E342E)" }},
-      11: {{ tag: "11P • EXTRA STOCK",  bg: "linear-gradient(135deg, #3949AB, #283593)" }},
-      12: {{ tag: "12P • SD'D OFF MAP", bg: "linear-gradient(135deg, #991B1B, #450A0A)" }}
-    }};
-
-    function damageMeterColor(dmgPct) {{
-      if (dmgPct >= 140) return "#FF4D6D";
-      if (dmgPct >= 130) return "#FF8C00";
-      if (dmgPct >= 120) return "#FFD000";
-      return "#6EE7B7";
-    }}
-
-    function renderStockIcons(wins, losses) {{
-      let out = '<span class="stock-row" title="' + wins + ' Stocks Remaining, ' + losses + ' KOs">';
-      for (let i = 0; i < wins; i++) {{
-        out += '<svg class="smash-stock" viewBox="0 0 100 100"><use href="#smash-ball-flame"></use></svg>';
-      }}
-      for (let j = 0; j < losses; j++) {{
-        out += '<svg class="smash-stock ko" viewBox="0 0 100 100"><use href="#smash-ball-ko"></use></svg>';
-      }}
-      out += "</span>";
-      return out;
-    }}
 
     function canonicalIssueUrl(issueId, teamId) {{
       try {{
@@ -1570,6 +1611,11 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
     let currentFilter = "all";
     let sortKey = "seed";
     let sortAsc = true;
+
+    let historySort = "names";
+    let showAlumni = false;
+    let expandAllHistory = false;
+    const openHistoryKeys = new Set();
 
     function showToast(msg) {{
       const el = document.getElementById("toast");
@@ -1599,16 +1645,16 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
 
     function buildEditionTabs() {{
       const bar = document.getElementById("edition-tabs");
-      const editions = [{{ id: "midseason", label: "Midseason Smash Roast (Wks 1–" + LEAGUE_DATA.completedWeeks + ")" }}];
+      const editions = [{{ id: "midseason", label: "Midseason Roast (Wks 1–" + LEAGUE_DATA.completedWeeks + ")" }}];
       for (let w = LEAGUE_DATA.completedWeeks; w >= 1; w--) {{
-        editions.push({{ id: "week-" + w, label: "Stage " + w }});
+        editions.push({{ id: "week-" + w, label: "Week " + w }});
       }}
       editions.forEach(ed => {{
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "edition-tab" + (ed.id === currentIssue ? " active" : "");
         btn.dataset.issue = ed.id;
-        btn.innerHTML = `<span>${{ed.label}}</span>`;
+        btn.textContent = ed.label;
         btn.addEventListener("click", () => selectIssue(ed.id, true));
         bar.appendChild(btn);
       }});
@@ -1640,9 +1686,9 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
     function renderParityTiers() {{
       const container = document.getElementById("parity-tiers");
       const tiers = [
-        {{ label: "MASTER HAND PLATFORM (1P • 6 STOCKS)", cls: "highlight-boss", teams: LEAGUE_DATA.teams.filter(t => t.seed === 1) }},
-        {{ label: "8-PLAYER SMASH: SUDDEN DEATH 300%! (#2–#9)", cls: "highlight-parity", teams: LEAGUE_DATA.teams.filter(t => t.seed >= 2 && t.seed <= 9) }},
-        {{ label: "OFF THE BLAST ZONE — K.O. SCREEN (#10–#12)", cls: "highlight-morgue", teams: LEAGUE_DATA.teams.filter(t => t.seed >= 10) }}
+        {{ label: "The Horseshoe Penthouse (1 Team)", cls: "", teams: LEAGUE_DATA.teams.filter(t => t.seed === 1) }},
+        {{ label: "The 8-Team Parity Pit (#2–#9 • ±1 Game of 4-3)", cls: "highlight-parity", teams: LEAGUE_DATA.teams.filter(t => t.seed >= 2 && t.seed <= 9) }},
+        {{ label: "The Cellar & Comms Morgue (3 Teams)", cls: "highlight-morgue", teams: LEAGUE_DATA.teams.filter(t => t.seed >= 10) }}
       ];
       container.innerHTML = "";
       tiers.forEach(tr => {{
@@ -1656,8 +1702,8 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         tr.teams.forEach(t => {{
           const chip = document.createElement("button");
           chip.type = "button";
-          chip.className = "team-chip";
-          chip.textContent = `${{t.seed}}P • ${{t.name}} (${{t.wins}}-${{t.losses}})`;
+          chip.className = "team-chip mono";
+          chip.textContent = `#${{t.seed}} ${{t.name}} (${{t.wins}}-${{t.losses}})`;
           chip.addEventListener("click", () => focusTeamRoast(t.id));
           chips.appendChild(chip);
         }});
@@ -1665,6 +1711,127 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         row.appendChild(chips);
         container.appendChild(row);
       }});
+    }}
+
+    function renderHistoryChart() {{
+      const container = document.getElementById("history-chart-rows");
+      if (!container || !LEAGUE_DATA.history) return;
+      const allFr = LEAGUE_DATA.history.franchises || [];
+      let rows = showAlumni ? [...allFr] : allFr.filter(f => f.active);
+
+      rows.sort((a, b) => {{
+        if (historySort === "rings") {{
+          if (b.championships !== a.championships) return b.championships - a.championships;
+          if (a.nameCount !== b.nameCount) return a.nameCount - b.nameCount;
+          return a.shortManager.localeCompare(b.shortManager);
+        }}
+        if (historySort === "ratio") {{
+          const ra = a.championships / Math.max(1, a.nameCount);
+          const rb = b.championships / Math.max(1, b.nameCount);
+          if (rb !== ra) return rb - ra;
+          if (b.championships !== a.championships) return b.championships - a.championships;
+          return a.nameCount - b.nameCount;
+        }}
+        // Default: Most Team Names
+        if (b.nameCount !== a.nameCount) return b.nameCount - a.nameCount;
+        if (b.championships !== a.championships) return b.championships - a.championships;
+        return a.shortManager.localeCompare(b.shortManager);
+      }});
+
+      const maxScale = Math.max(12, ...rows.map(r => Math.max(r.nameCount, r.championships)));
+      container.innerHTML = "";
+
+      rows.forEach(fr => {{
+        const isOpen = expandAllHistory || openHistoryKeys.has(fr.key);
+        const rowEl = document.createElement("div");
+        rowEl.className = "history-row" + (fr.active ? "" : " is-alumni") + (isOpen ? " open" : "");
+
+        const namePct = Math.max(3, Math.round((fr.nameCount / maxScale) * 100));
+        const ringPct = fr.championships > 0 ? Math.max(3, Math.round((fr.championships / maxScale) * 100)) : 0;
+
+        const nameLabel = fr.nameCount === 1 ? "1 Team Name" : `${{fr.nameCount}} Team Names`;
+        let ringLabel = "0 Titles";
+        if (fr.championships > 0) {{
+          const yrsShort = fr.champYears.map((y, idx) => idx === 0 ? String(y) : "'" + String(y).slice(2)).join(", ");
+          ringLabel = `🏆 ${{fr.championships}} ${{fr.championships === 1 ? "Title" : "Titles"}} (${{yrsShort}})`;
+        }}
+
+        const chipsHtml = fr.names.map(n => {{
+          const isChamp = n.champYears && n.champYears.length > 0;
+          const trophy = isChamp ? ` 🏆 ${{n.champYears.join(", ")}}` : "";
+          return `<span class="hd-chip${{isChamp ? " champ-name" : ""}}">${{n.name}}<span class="hd-yr">(${{n.years}})${{trophy}}</span></span>`;
+        }}).join("");
+
+        rowEl.innerHTML = `
+          <div class="history-row-main">
+            <div class="hr-who">
+              <div class="hr-mgr">
+                <span>${{fr.shortManager}}</span>
+                ${{fr.active ? "" : '<span class="hr-alumni-tag">Alumni</span>'}}
+              </div>
+              <div class="hr-cur">${{fr.currentTeam}} • ${{fr.seasons}} ${{fr.seasons === 1 ? "season" : "seasons"}}</div>
+            </div>
+            <div class="hr-bars">
+              <div class="bar-line">
+                <div class="bar-track"><div class="bar-fill names" style="width:${{namePct}}%;"></div></div>
+                <div class="bar-stat mono">${{nameLabel}}</div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-track"><div class="bar-fill rings" style="width:${{ringPct}}%;"></div></div>
+                <div class="bar-stat mono ${{fr.championships > 0 ? "has-rings" : "zero-rings"}}">${{ringLabel}}</div>
+              </div>
+            </div>
+            <div class="hr-toggle">${{isOpen ? "Hide names ▴" : "View names ▾"}}</div>
+          </div>
+          <div class="history-drawer">
+            <div class="hd-blurb">${{fr.blurb}}</div>
+            <div class="hd-chips">${{chipsHtml}}</div>
+          </div>
+        `;
+
+        rowEl.addEventListener("click", () => {{
+          if (expandAllHistory) {{
+            expandAllHistory = false;
+            document.getElementById("btn-expand-names").textContent = "Expand All Names";
+            openHistoryKeys.clear();
+            rows.forEach(r => {{ if (r.key !== fr.key) openHistoryKeys.add(r.key); }});
+          }} else if (openHistoryKeys.has(fr.key)) {{
+            openHistoryKeys.delete(fr.key);
+          }} else {{
+            openHistoryKeys.add(fr.key);
+          }}
+          renderHistoryChart();
+        }});
+
+        container.appendChild(rowEl);
+      }});
+    }}
+
+    function initHistoryControls() {{
+      document.querySelectorAll("[data-hsort]").forEach(btn => {{
+        btn.addEventListener("click", () => {{
+          historySort = btn.dataset.hsort;
+          document.querySelectorAll("[data-hsort]").forEach(b => b.classList.toggle("active", b.dataset.hsort === historySort));
+          renderHistoryChart();
+        }});
+      }});
+      const expBtn = document.getElementById("btn-expand-names");
+      if (expBtn) {{
+        expBtn.addEventListener("click", () => {{
+          expandAllHistory = !expandAllHistory;
+          if (!expandAllHistory) openHistoryKeys.clear();
+          expBtn.textContent = expandAllHistory ? "Collapse All Names" : "Expand All Names";
+          renderHistoryChart();
+        }});
+      }}
+      const alumBtn = document.getElementById("btn-toggle-alumni");
+      if (alumBtn) {{
+        alumBtn.addEventListener("click", () => {{
+          showAlumni = !showAlumni;
+          alumBtn.textContent = showAlumni ? "Hide 4 Retired Alumni" : "Include 4 Retired Alumni";
+          renderHistoryChart();
+        }});
+      }}
     }}
 
     function renderStandingsTable() {{
@@ -1682,7 +1849,7 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         const luckSign = t.luck > 0 ? "+" : "";
         const diffSign = t.diff > 0 ? "+" : "";
         tr.innerHTML = `
-          <td class="smash-hud"><strong>${{t.seed}}P</strong></td>
+          <td class="mono"><strong>#${{t.seed}}</strong></td>
           <td class="sticky-col"><strong>${{t.name}}</strong> <span style="color: var(--ink-muted); font-size: 12.5px;">(${{t.manager}})</span></td>
           <td class="num mono"><strong>${{t.wins}}-${{t.losses}}</strong></td>
           <td class="num mono">${{t.streak}}</td>
@@ -1702,12 +1869,12 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
     function renderTeamFilters() {{
       const bar = document.getElementById("team-filters");
       const presets = [
-        {{ id: "all", label: "All 12 Fighters" }},
-        {{ id: "parity8", label: "8-Player Sudden Death (#2–#9)" }},
-        {{ id: "fourthree", label: "The 4-3 Stalemate (#3–#8)" }},
-        {{ id: "bmt", label: "12P Self-Destruct (#12)" }}
+        {{ id: "all", label: "All 12 Franchises" }},
+        {{ id: "parity8", label: "The 8-Team Parity Pit (#2–#9)" }},
+        {{ id: "fourthree", label: "The 4-3 Six-Pack (#3–#8)" }},
+        {{ id: "bmt", label: "Bad Mother Tucker's Autopsy (#12)" }}
       ];
-      LEAGUE_DATA.teams.forEach(t => presets.push({{ id: "team-" + t.id, label: `${{t.seed}}P ${{t.name}}` }}));
+      LEAGUE_DATA.teams.forEach(t => presets.push({{ id: "team-" + t.id, label: `#${{t.seed}} ${{t.name}}` }}));
       bar.innerHTML = "";
       presets.forEach(p => {{
         const btn = document.createElement("button");
@@ -1717,7 +1884,7 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         btn.textContent = p.label;
         btn.addEventListener("click", () => {{
           currentFilter = p.id;
-          document.querySelectorAll(".filter-pill").forEach(el => el.classList.toggle("active", el.dataset.filter === p.id));
+          document.querySelectorAll("#team-filters .filter-pill").forEach(el => el.classList.toggle("active", el.dataset.filter === p.id));
           renderRoastCards();
         }});
         bar.appendChild(btn);
@@ -1739,57 +1906,43 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
       list.forEach(t => {{
         const card = document.createElement("article");
         card.className = "roast-card" + (t.id === 2 ? " is-bmt" : "");
-        const port = PLAYER_PORT_STYLES[t.seed] || {{ tag: t.seed + "P • FIGHTER", bg: "#1E293B" }};
         const luckSign = t.luck > 0 ? "+" : "";
-        const dmgPct = Math.round(t.pa / Math.max(1, LEAGUE_DATA.completedWeeks));
-        const dmgColor = damageMeterColor(dmgPct);
-        const stocksHtml = renderStockIcons(t.wins, t.losses);
-
         const sparks = t.weekly.map(w => {{
           const [wk, pts, oppId, oppPts, res] = w;
           const oppName = (TEAMS_BY_ID[oppId] || {{}}).name || "";
           const pct = Math.max(14, Math.min(100, Math.round(((pts - 55) / 155) * 100)));
           const cls = res === "W" ? "win" : "loss";
           return `
-            <div class="spark-col" title="Stage ${{wk}}: ${{res}} ${{pts.toFixed(2)}} vs ${{oppName}} (${{oppPts.toFixed(2)}})">
+            <div class="spark-col" title="Wk ${{wk}}: ${{res}} ${{pts.toFixed(2)}} vs ${{oppName}} (${{oppPts.toFixed(2)}})">
               <div class="spark-pts mono">${{Math.round(pts)}}</div>
               <div class="spark-bar-bg"><div class="spark-bar ${{cls}}" style="height:${{pct}}%"></div></div>
-              <div class="spark-wk mono">S${{wk}}${{res}}</div>
+              <div class="spark-wk mono">W${{wk}}${{res}}</div>
             </div>
           `;
         }}).join("");
 
         card.innerHTML = `
-          <div class="fighter-topbar smash-hud" style="background: ${{port.bg}};">
-            <span class="fighter-port">${{port.tag}} • ${{t.wins}}-${{t.losses}} (${{t.streak}})</span>
-            ${{stocksHtml}}
-          </div>
-          <div class="roast-inner">
-            <svg class="roast-watermark" viewBox="0 0 100 100" aria-hidden="true">
-              <use href="#smash-ball-mono"></use>
-            </svg>
-            <div class="roast-head">
-              <div>
-                <h3 class="roast-team smash-display">${{t.name}}</h3>
-                <div class="roast-mgr">${{t.manager}} • ${{t.playoffPct.toFixed(1)}}% Bracket Odds</div>
-              </div>
-              <button type="button" class="btn share-team-btn" data-tid="${{t.id}}" title="Copy direct link to this fighter's roast">Share</button>
+          <svg class="roast-watermark" viewBox="0 0 100 100" aria-hidden="true">
+            <use href="#smash-ball-mono"></use>
+          </svg>
+          <div class="roast-head">
+            <div>
+              <div class="roast-seed mono">Seed #${{t.seed}} • ${{t.wins}}-${{t.losses}} (${{t.streak}}) • ${{t.playoffPct.toFixed(1)}}% Odds</div>
+              <h3 class="roast-team serif">${{t.name}}</h3>
+              <div class="roast-mgr">${{t.manager}}</div>
             </div>
-            <div class="splash-ribbon"><span>"${{t.epithet}}"</span></div>
-            <div class="roast-hud mono">
-              <div class="dmg-meter" title="Average Points Against Per Week (Smash Damage %)">
-                <div class="dmg-val smash-hud" style="color: ${{dmgColor}};">${{dmgPct}}<span class="dmg-pct">%</span></div>
-                <div class="rm-label">DMG/WK</div>
-              </div>
-              <div><div class="rm-label">PF</div><div class="rm-val">${{t.pf.toFixed(1)}}</div></div>
-              <div><div class="rm-label">All-Play</div><div class="rm-val">${{t.allPlayW}}-${{t.allPlayL}}</div></div>
-              <div><div class="rm-label">Luck</div><div class="rm-val">${{luckSign}}${{t.luck.toFixed(2)}}</div></div>
-              <div><div class="rm-label">Moves</div><div class="rm-val">${{t.moves}}</div></div>
-            </div>
-            <div class="roast-crime">${{t.crime}}</div>
-            <p class="roast-body">${{t.roast}}</p>
-            <div class="spark-wrap">${{sparks}}</div>
+            <button type="button" class="btn share-team-btn" data-tid="${{t.id}}" title="Copy direct link to this roast">Share</button>
           </div>
+          <div class="roast-epithet">"${{t.epithet}}"</div>
+          <div class="roast-metrics mono">
+            <div><div class="rm-label">PF</div><div class="rm-val">${{t.pf.toFixed(1)}}</div></div>
+            <div><div class="rm-label">All-Play</div><div class="rm-val">${{t.allPlayW}}-${{t.allPlayL}}</div></div>
+            <div><div class="rm-label">Luck</div><div class="rm-val">${{luckSign}}${{t.luck.toFixed(2)}}</div></div>
+            <div><div class="rm-label">Moves</div><div class="rm-val">${{t.moves}}</div></div>
+          </div>
+          <div class="roast-crime">${{t.crime}}</div>
+          <p class="roast-body">${{t.roast}}</p>
+          <div class="spark-wrap">${{sparks}}</div>
         `;
         grid.appendChild(card);
       }});
@@ -1800,14 +1953,14 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
           const tid = Number(btn.dataset.tid);
           const team = TEAMS_BY_ID[tid];
           const link = canonicalIssueUrl("midseason", tid);
-          copyText(`${{team.name}} (${{team.seed}}P, ${{team.wins}}-${{team.losses}}) — "${{team.epithet}}": ${{link}}`, `Copied ${{team.name}} fighter card!`);
+          copyText(`${{team.name}} (#${{team.seed}}, ${{team.wins}}-${{team.losses}}) — "${{team.epithet}}": ${{link}}`, `Copied ${{team.name}} roast link!`);
         }});
       }});
     }}
 
     function focusTeamRoast(tid) {{
       currentFilter = "team-" + tid;
-      document.querySelectorAll(".filter-pill").forEach(el => el.classList.toggle("active", el.dataset.filter === currentFilter));
+      document.querySelectorAll("#team-filters .filter-pill").forEach(el => el.classList.toggle("active", el.dataset.filter === currentFilter));
       renderRoastCards();
       document.getElementById("roasts-section").scrollIntoView({{ behavior: "smooth", block: "start" }});
     }}
@@ -1821,9 +1974,8 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         const div = document.createElement("div");
         div.className = "matchup-card";
         div.innerHTML = `
-          <div class="mc-row winner"><span><strong class="smash-hud">${{a.seed}}P</strong> ${{a.name}}</span><span class="mono">${{a.wins}}-${{a.losses}}</span></div>
-          <div class="vs-divider"><span class="vs-pill">VS</span></div>
-          <div class="mc-row winner"><span><strong class="smash-hud">${{h.seed}}P</strong> ${{h.name}}</span><span class="mono">${{h.wins}}-${{h.losses}}</span></div>
+          <div class="mc-row winner"><span>#${{a.seed}} ${{a.name}}</span><span class="mono">${{a.wins}}-${{a.losses}}</span></div>
+          <div class="mc-row winner"><span>@ #${{h.seed}} ${{h.name}}</span><span class="mono">${{h.wins}}-${{h.losses}}</span></div>
           <div class="mc-foot"><span>${{note}}</span></div>
         `;
         grid.appendChild(div);
@@ -1836,9 +1988,9 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
       document.getElementById("wk-kicker").textContent = wk.kicker;
       document.getElementById("wk-headline").textContent = wk.headline;
       document.getElementById("wk-subhead").textContent = wk.subhead;
-      document.getElementById("wk-median-badge").textContent = `Stage Median Damage: ${{wk.median.toFixed(2)}} Pts`;
-      document.getElementById("wk-scoreboard-title").textContent = `Stage ${{wk.week}} Final Smash Results`;
-      document.getElementById("wk-standings-title").textContent = `Bracket Standings After Stage ${{wk.week}}`;
+      document.getElementById("wk-median-badge").textContent = `League Weekly Median: ${{wk.median.toFixed(2)}} Pts`;
+      document.getElementById("wk-scoreboard-title").textContent = `Week ${{wk.week}} Final Box Scores`;
+      document.getElementById("wk-standings-title").textContent = `Standings Snapshot Through Week ${{wk.week}}`;
 
       const highT = TEAMS_BY_ID[wk.high[0]], lowT = TEAMS_BY_ID[wk.low[0]];
       const clW = TEAMS_BY_ID[wk.closest[0]], clL = TEAMS_BY_ID[wk.closest[2]];
@@ -1846,28 +1998,28 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         ? `${{TEAMS_BY_ID[wk.lucky[0]].name}} won with ${{wk.lucky[1].toFixed(2)}} (sub-median)`
         : "Every winner cleared the median";
       const brutalTxt = wk.brutal
-        ? `${{TEAMS_BY_ID[wk.brutal[2]].name}} scored ${{wk.brutal[3].toFixed(2)}} and got KO'd`
+        ? `${{TEAMS_BY_ID[wk.brutal[2]].name}} scored ${{wk.brutal[3].toFixed(2)}} and LOST`
         : "Every above-median scorer won";
 
       document.getElementById("wk-awards").innerHTML = `
         <div class="stat-box">
-          <div class="stat-box-label">Final Smash MVP (High)</div>
-          <div class="stat-box-val smash-hud" style="color: var(--emerald);">${{wk.high[1].toFixed(2)}}</div>
+          <div class="stat-box-label">Scoring Belt (High)</div>
+          <div class="stat-box-val mono" style="color: var(--emerald);">${{wk.high[1].toFixed(2)}}</div>
           <div class="stat-box-note"><strong>${{highT.name}}</strong> (${{highT.manager}})</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Self-Destruct Award (Low)</div>
-          <div class="stat-box-val smash-hud" style="color: var(--crimson);">${{wk.low[1].toFixed(2)}}</div>
+          <div class="stat-box-label">Toilet Bowl (Low)</div>
+          <div class="stat-box-val mono" style="color: var(--crimson);">${{wk.low[1].toFixed(2)}}</div>
           <div class="stat-box-note"><strong>${{lowT.name}}</strong> (${{lowT.manager}})</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Last-Frame Ledge Trump</div>
-          <div class="stat-box-val smash-hud">+${{wk.closest[4].toFixed(2)}} PTS</div>
+          <div class="stat-box-label">Closest Sweat</div>
+          <div class="stat-box-val mono">+${{wk.closest[4].toFixed(2)}} Pts</div>
           <div class="stat-box-note">${{clW.name}} (${{wk.closest[1].toFixed(2)}}) over ${{clL.name}} (${{wk.closest[3].toFixed(2)}})</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">RNG Item Drop &amp; Tilt</div>
-          <div class="stat-box-val smash-hud" style="font-size: 20px;">MEDIAN: ${{wk.median.toFixed(2)}}</div>
+          <div class="stat-box-label">Heist &amp; Heartbreak</div>
+          <div class="stat-box-val mono" style="font-size: 17px;">Median: ${{wk.median.toFixed(2)}}</div>
           <div class="stat-box-note">${{brutalTxt}} • ${{luckyTxt}}</div>
         </div>
       `;
@@ -1880,11 +2032,10 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         card.className = "matchup-card";
         card.innerHTML = `
           <div class="mc-row winner"><span>${{TEAMS_BY_ID[wid].name}}</span><span class="mono">${{wpts.toFixed(2)}}</span></div>
-          <div class="vs-divider"><span class="vs-pill">K.O.</span></div>
           <div class="mc-row loser"><span>${{TEAMS_BY_ID[lid].name}}</span><span class="mono">${{lpts.toFixed(2)}}</span></div>
           <div class="mc-foot">
             <span>Margin: <strong class="mono">+${{margin.toFixed(2)}}</strong></span>
-            <span>${{wpts < wk.median ? "Sub-Median Cheese W" : (lpts > wk.median ? "Above-Median Bad Beat" : "Clean Stock W")}}</span>
+            <span>${{wpts < wk.median ? "Sub-Median Heist" : (lpts > wk.median ? "Above-Median Loss" : "Regulation W")}}</span>
           </div>
         `;
         gamesGrid.appendChild(card);
@@ -1900,7 +2051,7 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
         if (rank === 6) tr.className = "playoff-cut";
         const dSign = diff > 0 ? "+" : "";
         tr.innerHTML = `
-          <td class="smash-hud"><strong>${{rank}}P</strong></td>
+          <td class="mono"><strong>#${{rank}}</strong></td>
           <td class="sticky-col"><strong>${{tm.name}}</strong> <span style="color: var(--ink-muted); font-size: 12.5px;">(${{tm.manager}})</span></td>
           <td class="num mono"><strong>${{w}}-${{l}}</strong></td>
           <td class="num mono">${{wkPts.toFixed(2)}}</td>
@@ -1928,21 +2079,23 @@ def render_html_page(model, default_issue="midseason", base_prefix="./", is_root
       const root = document.documentElement;
       const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
       root.setAttribute("data-theme", next);
-      document.getElementById("btn-theme").textContent = next === "dark" ? "Daylight Menu (Light)" : "Final Destination (Dark)";
+      document.getElementById("btn-theme").textContent = next === "dark" ? "Light Mode" : "Night Mode";
     }});
 
     document.getElementById("btn-copy-link").addEventListener("click", () => {{
       const url = canonicalIssueUrl(currentIssue);
-      let teaser = "SUPER SMASH ALLIANCE 10.0 — Midseason Smash Roast (8 of you trapped in 8-Player Sudden Death at 4-3, and Bad Mother Tucker's 262% Damage K.O.): " + url;
+      let teaser = "The Alliance Dispatch — Midseason Roast (8 of you in a 4-3 phone booth, 15 years of team names vs. rings, and Bad Mother Tucker's 1-6 funeral): " + url;
       if (currentIssue.startsWith("week-")) {{
         const wk = LEAGUE_DATA.weeks[currentIssue.replace("week-", "")];
         if (wk) teaser = wk.teaser + " " + url;
       }}
-      copyText(teaser, "Smash Roast link copied for group chat!");
+      copyText(teaser, "Group-chat link copied!");
     }});
 
     buildEditionTabs();
     renderParityTiers();
+    initHistoryControls();
+    renderHistoryChart();
     renderStandingsTable();
     renderTeamFilters();
     renderRoastCards();
@@ -1988,6 +2141,12 @@ def build_all(out_dir=SITE_OUT_DIR, fetch_live=False, default_issue=None):
     sync_smash_artwork(out_dir)
     data = load_espn_data(out_dir=out_dir, fetch_live=fetch_live)
     model = compute_league_model(data)
+
+    # Persist structured 15-year franchise history JSON alongside espn_full.json
+    data_dir = os.path.join(out_dir, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    with open(os.path.join(data_dir, "league_history.json"), "w") as f:
+        json.dump(model["history"], f, indent=2, ensure_ascii=False)
 
     # Default root issue: Midseason Roast while through Week 7; auto-advance to latest completed week starting Week 8+
     root_issue = default_issue or (
@@ -2062,13 +2221,13 @@ jobs:
 
     readme = """# The Alliance Dispatch — Super Smash Alliance 10.0 (`SSA-2026`)
 
-Official static sports broadsheet & roast archive for **The Super Smash Alliance 10.0** (ESPN League `1000567`).
+Official static sports broadsheet, 15-year franchise lore archive (2012–2026), and weekly roast site for **The Super Smash Alliance 10.0** (ESPN League `1000567`).
 
 **Live Site:** https://briskman-j.github.io/SSA-2026/
 
 ## Shareable Per-Edition Group-Chat Links
 Every edition has its own dedicated URL and custom OpenGraph iMessage / WhatsApp preview card:
-- **Midseason State of the Alliance Roast (Weeks 1–7):** https://briskman-j.github.io/SSA-2026/recaps/midseason/
+- **Midseason State of the Alliance Roast (Weeks 1–7 + 15-Year Team Names vs. Rings Chart):** https://briskman-j.github.io/SSA-2026/recaps/midseason/
 - **Week 7 Recap:** https://briskman-j.github.io/SSA-2026/recaps/week-7/
 - **Weeks 1–6 Archive:** `/recaps/week-1/` through `/recaps/week-6/`
 - **Direct Friend Roast Deep-Link:** append `?team=<TEAM_ID>` (e.g. `https://briskman-j.github.io/SSA-2026/recaps/midseason/?team=1` for Kyle Feeney)
